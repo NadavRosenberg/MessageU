@@ -5,8 +5,3 @@ class Message(object):
         self.from_client = from_client
         self.type = type
         self.content = content
-    pass
-
-
-
-

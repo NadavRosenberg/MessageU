@@ -7,9 +7,8 @@ def get_port():
 
     # extract port to listen
     try:
-        f = open(MY_PORT_INFO, "r")
-        port = int(f.read())
-        f.close()
+        with open(MY_PORT_INFO, "r") as f:
+            port = int(f.read())
     except Exception as e:
         print ("Failed to open '" + MY_PORT_INFO + "', Error:", e)
         exit(0)
