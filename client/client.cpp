@@ -17,12 +17,54 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>*/
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include "Profile.h"
 
 #define PORT 8080
+#define SERVER_INFO "server.info"
 
-//int handleclient(int s) {}
+int VERSION = 1;
 
 int main() {
+
+	std::ifstream file(SERVER_INFO);
+	std::string file_content;
+
+	if (file.is_open()) {
+		file >> file_content; // pipe file's content into stream
+	}
+
+	std::string host;
+	int port;
+
+	try {
+		std::vector<std::string> seglist;
+
+		std::stringstream file_content_s(file_content);
+		std::string segment;
+
+		std::getline(file_content_s, segment, ':');
+		host = segment;
+
+		std::getline(file_content_s, segment, ':');
+		std::stringstream port_s(segment);
+		port_s >> port;
+	}
+	catch (int num) {
+		std::cerr << "Failed fetching host and port!" << std::endl;
+		exit(0);
+	}
+
+	Profile profile = Profile();
+
+
+
+
+
 	//int sock = 0, valread;
 	//struct sockaddr_in serv_addr;
 	//char* hello = "Hello from client";
@@ -100,5 +142,5 @@ int main() {
 	//// Cleanup winsock
 	//WSACleanup();
 
-	//return 0;
+	return 0;
 }

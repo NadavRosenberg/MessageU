@@ -24,6 +24,12 @@
     <ClCompile Include="tmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="connect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="port.h">
@@ -38,5 +44,11 @@
     <ClInclude Include="response.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="server.info" />
   </ItemGroup>
 </Project>

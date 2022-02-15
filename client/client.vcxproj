@@ -99,14 +99,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="client.cpp" />
+    <ClCompile Include="connect.cpp" />
     <ClCompile Include="port.cpp" />
+    <ClCompile Include="profile.cpp" />
     <ClCompile Include="tmp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="port.h" />
     <ClInclude Include="port2.h" />
+    <ClInclude Include="profile.h" />
     <ClInclude Include="request.h" />
     <ClInclude Include="response.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="server.info" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
