@@ -18,24 +18,24 @@
     <ClCompile Include="client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tmp.cpp">
+    <ClCompile Include="port.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="port.cpp">
+    <ClCompile Include="tmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="request.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="response.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="port.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="port2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="request.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="response.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
