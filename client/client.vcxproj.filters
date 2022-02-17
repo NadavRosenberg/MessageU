@@ -18,13 +18,10 @@
     <ClCompile Include="client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="port.cpp">
+    <ClCompile Include="server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tmp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="connect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="profile.cpp">
@@ -33,18 +30,21 @@
     <ClCompile Include="menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="commands.cpp">
+    <ClCompile Include="protocol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="encryption.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="connection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="port.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="port2.h">
+    <ClInclude Include="server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="request.h">
@@ -59,10 +59,16 @@
     <ClInclude Include="menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="commands.h">
+    <ClInclude Include="protocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="encryption.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="connection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

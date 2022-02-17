@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\cryptopp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\cpplib;C:\cpplib\boost</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -107,23 +107,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="client.cpp" />
-    <ClCompile Include="commands.cpp" />
-    <ClCompile Include="connect.cpp" />
+    <ClCompile Include="protocol.cpp" />
+    <ClCompile Include="connection.cpp" />
     <ClCompile Include="encryption.cpp" />
     <ClCompile Include="menu.cpp" />
-    <ClCompile Include="port.cpp" />
+    <ClCompile Include="server.cpp" />
     <ClCompile Include="profile.cpp" />
     <ClCompile Include="tmp.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="commands.h" />
+    <ClInclude Include="protocol.h" />
+    <ClInclude Include="connection.h" />
     <ClInclude Include="encryption.h" />
     <ClInclude Include="menu.h" />
-    <ClInclude Include="port.h" />
-    <ClInclude Include="port2.h" />
+    <ClInclude Include="server.h" />
     <ClInclude Include="profile.h" />
     <ClInclude Include="request.h" />
     <ClInclude Include="response.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="my.info" />

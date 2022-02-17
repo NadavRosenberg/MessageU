@@ -1,11 +1,12 @@
 import selectors
 import socket
+import port
 
 HOST = '127.0.0.1'
 
 class Connection:
-    def __init__(self, port):
-        self.port = port
+    def __init__(self):
+        self.port = port.get_port()
         self.host = HOST
         self.start_listen()
 
@@ -36,21 +37,20 @@ class Connection:
 
     def start_listen(self):
         sel = selectors.DefaultSelector()
-        lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        lsock.bind((self.host, self.port))
-        lsock.listen()
-        print('listening on port', self.port)
-        lsock.setblocking(False)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind((self.host, self.port))
+            s.listen()
+            print('listening on port', self.port)
+            s.setblocking(False)
 
-        # registers the socket to be monitored with sel.select() for the read events
-        sel.register(lsock, selectors.EVENT_READ, data=None)
+            # registers the socket to be monitored with sel.select() for the read events
+            sel.register(s, selectors.EVENT_READ, data=None)
 
-        while True:
-            # blocks until there are sockets ready for I/O
-            events = sel.select(timeout=None)
-            for key, mask in events:
-                if key.data is None: # from the listening socket
-                    accept_wrapper(key.fileobj)
-                else:
-                    service_connection(key, mask)
-    pass
+            while True:
+                # blocks until there are sockets ready for I/O
+                events = sel.select(timeout=None)
+                for key, mask in events:
+                    if key.data is None: # from the listening socket
+                        self.accept_wrapper(key.fileobj)
+                    else:
+                        self.service_connection(key, mask)
