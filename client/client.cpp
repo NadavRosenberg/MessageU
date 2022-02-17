@@ -22,7 +22,9 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "Profile.h"
+#include "profile.h"
+#include "menu.h"
+#include "commands.h"
 
 #define PORT 8080
 #define SERVER_INFO "server.info"
@@ -60,7 +62,42 @@ int main() {
 	}
 
 	Profile profile = Profile();
+	
+	Menu menu = Menu();
+	int command_num = 1;
+	Commands commands = Commands();
 
+	while (command_num) {
+		menu.show_menu();
+		std::cin >> command_num;
+		std::cout << "You choose: " << command_num << std::endl;
+
+		switch (command_num) {
+			case 110:
+				commands.registerUser();
+				break;
+			case 120:
+				commands.requestClientsList();
+				break;
+			case 130:
+				commands.requestPublicKey();
+				break;
+			case 140:
+				commands.requestMessages();
+				break;
+			case 150:
+				commands.sendMessage();
+				break;
+			case 151:
+				commands.requestSymmetricKey();
+				break;
+			case 152:
+				commands.sendSymmetricKey();
+				break;
+			default:
+				std::cout << "Invalid command! please try again .." << std::endl;
+		}
+	}
 
 
 

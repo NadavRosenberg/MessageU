@@ -5,16 +5,14 @@
 #pragma pack(push, 1)
 struct RequestHeader
 {
-	uint32_t user_id;
+	char client_id[16];
 	char version;
-	char op;
-	uint16_t name_len;
-	char *filename;
+	uint16_t code;
+	uint32_t payload_size;
 };
 
 struct RequestPayload
 {
-	uint32_t size;
 	char* payload;
 };
 
