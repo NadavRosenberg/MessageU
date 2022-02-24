@@ -4,9 +4,6 @@
 #include "connection.h"
 #include "protocol.h"
 #include "menu.h"
-#include "profile.h"
-
-int VERSION = 1;
 
 int main() {
 	// fetch server's host & port
@@ -16,8 +13,7 @@ int main() {
 	int port = s.getPort();
 	
 	// connect to server
-	connection c(host, std::to_string(port));
-	c.connect();
+	connection* c = new connection(host, std::to_string(port));
 
 	// init protocol
 	protocol protocol(c);
@@ -26,15 +22,13 @@ int main() {
 	Menu menu = Menu();
 
 	// execute user requests
-	int req_code = 1;
-	while (req_code) {
+	int command_code = 1;
+	while (command_code) {
 		menu.show_menu();
-		std::cin >> req_code;
-		protocol.handle(req_code);
+		std::cout << "? ";
+		std::cin >> command_code;
+		protocol.handle(command_code);
 	}
 
 	return 0;
-
-	//Profile profile = Profile();
-
 }

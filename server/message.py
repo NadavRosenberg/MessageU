@@ -1,4 +1,4 @@
-class Message(object):
+class message(request):
     def __init__(self, id, to_client, from_client, type, content):
         self.id = id
         self.to_client = to_client

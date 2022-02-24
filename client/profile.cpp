@@ -1,50 +1,83 @@
-#include "Profile.h"
+#include "profile.h"
+#include "protocol.h"
 
-#define FILENAME "my.info"
-
-Profile::Profile() {
-	if (std::filesystem::exists(FILENAME)) {
-		std::ifstream file(FILENAME);
-		std::string file_content;
+void profile::fetchData() {
+	if (std::filesystem::exists(PROFILE_FILENAME)) {
+		std::ifstream file(PROFILE_FILENAME);
+		std::string content;
 
 		if (file.is_open()) {
-			file >> file_content; // pipe file's content into stream
+			file >> content; // pipe file's content into stream
 
 			try {
-				std::vector<std::string> seglist;
-
-				std::stringstream file_content_s(file_content);
+				std::stringstream content_s(content);
 				std::string segment;
 
-				std::getline(file_content_s, segment, '\n');
+				std::getline(content_s, segment, '\n');
 				name = segment;
 
-				std::getline(file_content_s, segment, '\n');
-				uuid = segment;
+				std::getline(content_s, segment, '\n');
+				memcpy(&uuid, &segment, UUID_SIZE);
 
-				std::getline(file_content_s, segment, '\n');
+				std::getline(content_s, segment, '\n');
 				private_key = segment;
 			}
 			catch (int num) {
 				std::cerr << "Failed fetching user data!" << std::endl;
-				exit(0);
+				exit_program();
 			}
 		}
 		else {
 			std::cerr << "Something happend while opening the file!" << std::endl;
+			exit_program();
 		}
 	}
 	else {
-		std::ofstream file(FILENAME);
+		std::ofstream file(PROFILE_FILENAME);
 
-		rsa_keys keys = Encryption::getRSAKeys();
+		rsa_keys keys = encryption::getRSAKeys();
 
-		file << "\n\n" << keys.private_key << std::endl;
+		file << "\n\n" << keys.public_key << std::endl;
 
 		file.close();
 	}
 }
 
-bool Profile::isExist() {
-	return std::filesystem::exists(FILENAME);
+void profile::setData(std::string _name, char* _uuid, std::string _private_key) {
+	name = _name;
+	memcpy(uuid, _uuid, 16);
+	private_key = _private_key;
+
+	std::ofstream file(PROFILE_FILENAME);
+	std::string content;
+
+	if (file.is_open()) {
+		file << name << '\n';
+		file << uuid << '\n';
+		file << private_key;
+	}
+	else {
+		std::cerr << "Something happend while opening the file!" << std::endl;
+		exit_program();
+	}
+}
+
+bool profile::isExist() {
+	return std::filesystem::exists(PROFILE_FILENAME);
+}
+
+std::string profile::getName() {
+	return name;
+}
+
+char* profile::getUuid() {
+	return uuid;
+}
+
+std::string profile::getPrivateKey() {
+	return private_key;
+}
+
+int profile::getVersion() {
+	return VERSION;
 }

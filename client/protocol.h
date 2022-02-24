@@ -1,13 +1,14 @@
 #pragma once
 #include <iostream>
 #include "connection.h"
-#include "request.h"
 #include "encryption.h"
+#include "profile.h"
 
 class protocol
 {
 private:
-	connection conn;
+	profile prof;
+	connection* conn;
 	void registerUser();
 	void requestClientsList();
 	void requestPublicKey();
@@ -17,7 +18,7 @@ private:
 	void sendSymmetricKey();
 	void exitProgram();
 public:
-	protocol(connection);
+	protocol(connection*);
 	void handle(int);
 };
 
