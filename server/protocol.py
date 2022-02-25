@@ -2,30 +2,45 @@ import struct
 from request import Request
 from response import Response
 
+UUID_SIZE = 16
+HEADER_SIZE = 23
+
 class protocol:
-    HEADER_SIZE = 23
 
     def __init__(self, db):
         self.db = db
     
     def registerUser(self, request):
+        # create payload
+        payload = request.get_payload()
+        name = payload[:255]
+        public_key = payload[255:]
+        
+        # create response
         try:
-            payload = request.get_payload()
-            name = payload[:255]
-            public_key = payload[255:]
-
             uuid = self.db.create_user(name, public_key)
-            res = Response(2100, uuid) #str
-            return res
-        except Exception as e:
-            print('Something went wrong, Error:', e)
+            return Response(2100, uuid)
+        except:
+            raise Exception('Username already exists!')
 
     def requestClientsList(self, request):
-        res = Response(2101, str(uuid.uuid1()))
-        print('in 1101')
+        # create payload
+        users = self.db.get_users()
+        client_id = request.get_client_id()
+        payload = ''.join([user_id + user_name for user_id, user_name in users if user_id != client_id])
+
+        # create response
+        return Response(2101, payload)
 
     def requestPublicKey(self, request):
-        print('in 1102')
+        # create payload
+        client_id = request.get_payload()
+        if len(client_id) != UUID_SIZE:
+            raise Exception() 
+        public_key = self.db.get_user_public_key(client_id);
+
+        # create response
+        return Response(2102, client_id + public_key)
 
     def sendMessage(self, request):
         print('in 1103')
@@ -46,7 +61,10 @@ class protocol:
         }
 
         def switch(request):
-            return switcher.get(request.get_code(), self.default)(request)
+            try:
+                return switcher.get(request.get_code(), self.default)(request)
+            except Exception as e:
+                return Response(9000, str(e))
 
         return switch(request)
 

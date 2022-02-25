@@ -24,6 +24,8 @@ protected:
 	request();
 public:
 	request(uint16_t code);
+	request(char* uuid, char version, uint16_t code);
+	request(char* uuid, char version, uint16_t code, std::string payload);
 	request(uint16_t code, std::string payload);
 	~request();
 	int size();

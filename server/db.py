@@ -30,7 +30,7 @@ class db:
     def create_clients_table(self):
         cur = self.conn.cursor()
         cur.execute('''
-            CREATE TABLE clients(id VARCHAR(16) PRIMARY KEY, user_name VARCHAR(255), public_key VARCHAR(160), last_seen DATE)
+            CREATE TABLE clients(id VARCHAR(16) PRIMARY KEY, user_name VARCHAR(255) UNIQUE, public_key VARCHAR(160), last_seen DATE)
         ''')
         self.conn.commit()
 
@@ -45,7 +45,6 @@ class db:
         cur = self.conn.cursor()
 
         client_id = str(uuid.uuid1())[:16]
-        #last_seen = date.today()
         time = datetime.now().strftime("%B %d, %Y %I:%M%p")
 
         cur.execute('''
@@ -55,4 +54,21 @@ class db:
         self.conn.commit()
         return client_id
 
+    def get_users(self):
+        cur = self.conn.cursor()
+
+        cur.execute('''
+            SELECT id, user_name FROM clients
+        ''')
+
+        return cur.fetchall()
+
+    def get_user_public_key(self, client_id):
+        cur = self.conn.cursor()
+
+        cur.execute('''
+            SELECT public_key FROM clients WHERE id=?
+        ''', (client_id,))
+
+        return cur.fetchone()[0]
 

@@ -16,6 +16,9 @@ class Request:
         print("code:         ", self.code)
         print("payload_size: ", self.payload_size)
         print("payload:      ", self.payload, '\n')
+        
+    def get_client_id(self):
+        return self.client_id
 
     def get_code(self):
         return self.code

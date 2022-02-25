@@ -2,6 +2,7 @@ import selectors
 import socket
 import port
 import types
+from response import Response
 #from protocol import protocol
 
 HOST = '127.0.0.1'
@@ -38,8 +39,8 @@ class connection:
                     res = self.protocol.handler(req)
                     res.print()
                     sent = sock.send(res.to_bytes())  # Should be ready to write
-                except:
-                    print('something happened')
+                except Exception as e:
+                    print('Something went wrong, Error:', e)
                 finally:
                     data.outb = b''
 

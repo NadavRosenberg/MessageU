@@ -1,11 +1,11 @@
 import struct
 
-VERSION = 1
+VERSION = 2
 
 class Response:
     def __init__(self, code, payload):
         self.code = code
-        self.payload_size = 7 + len(payload);
+        self.payload_size = len(payload);
         self.payload = payload
 
     def print(self):

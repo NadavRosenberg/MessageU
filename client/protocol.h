@@ -17,6 +17,7 @@ private:
 	void requestSymmetricKey();
 	void sendSymmetricKey();
 	void exitProgram();
+	response* sendAndReceive(request*);
 public:
 	protocol(connection*);
 	void handle(int);

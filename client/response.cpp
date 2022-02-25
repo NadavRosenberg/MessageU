@@ -15,6 +15,10 @@ response::~response() {
 	delete r;
 }
 
+uint16_t response::get_code() {
+	return r->h.code;
+}
+
 int response::get_payload_size() {
 	return r->h.payload_size;
 }

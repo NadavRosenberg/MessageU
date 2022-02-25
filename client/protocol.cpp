@@ -1,41 +1,43 @@
 #include "protocol.h"
 #include "request.h"
 #include "message.h"
+#include "global.h"
 
 protocol::protocol(connection* c): conn(c), prof(profile()) {
 }
 
 void protocol::handle(int command_code) {
-	//request* req;
-	switch (command_code) {
-		case 110:
-			registerUser();
-			break;
-		case 120:
-			requestClientsList();
-			break;
-		case 130:
-			requestPublicKey();
-			break;
-		case 140:
-			requestMessages();
-			break;
-		case 150:
-			sendMessage();
-			break;
-		case 151:
-			requestSymmetricKey();
-			break;
-		case 152:
-			sendSymmetricKey();
-			break;
-		default:
-			std::cerr << "Invalid command! please try again .." << std::endl;
+	try {
+		switch (command_code) {
+			case 110:
+				registerUser();
+				break;
+			case 120:
+				requestClientsList();
+				break;
+			case 130:
+				requestPublicKey();
+				break;
+			case 140:
+				requestMessages();
+				break;
+			case 150:
+				sendMessage();
+				break;
+			case 151:
+				requestSymmetricKey();
+				break;
+			case 152:
+				sendSymmetricKey();
+				break;
+			default:
+				std::cerr << "Invalid command! please try again .." << std::endl;
+		}
+	}
+	catch (const std::exception& e)	{
+		std::cout << "Server responed with an error: " << e.what() << std::endl;
 	}
 }
-
-int NAME_LENGTH = 255;
-int PUBLIC_KEY_LENGTH = 160;
 
 void protocol::registerUser() {
 	std::string name;
@@ -54,11 +56,10 @@ void protocol::registerUser() {
 	payload_req[NAME_LENGTH] = '\0';
 	memcpy(&payload_req[NAME_LENGTH], keys.public_key.c_str(), PUBLIC_KEY_LENGTH);
 
-	request* req = new request(1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
+	request* req = new request(prof.getUuid(), prof.getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
 
 	// send request & get response
-	conn->sendRequest(*req);
-	response* res = conn->getResponse();
+	response* res = sendAndReceive(req);
 
 	// analyze response's payload
 	std::string payload_res = res->get_payload();
@@ -70,15 +71,43 @@ void protocol::registerUser() {
 }
 
 void protocol::requestClientsList() {
-	request r(1101);
-	conn->sendRequest(r);
-	//response res = conn->getResponse();
+    // create request
+	request* req = new request(prof.getUuid(), prof.getVersion(), 1101);
+
+	// send request & get response
+	response* res = sendAndReceive(req);
+
+	// analyze response's payload
+	std::string payload_res = res->get_payload();
+	int amount = res->get_payload_size() / (UUID_SIZE + NAME_LENGTH);
+	char* pchr = new char[res->get_payload_size() + 1]{ 0 };
+	memcpy(pchr, payload_res.c_str(), res->get_payload_size());
+
+	// print users
+	std::cout << "Users:" << std::endl;
+	for (int i = 0; i < amount; i++) {
+		printf("# %.*s ", NAME_LENGTH, pchr + UUID_SIZE);
+		printf("(%.*s)\n", UUID_SIZE, pchr);
+		pchr += UUID_SIZE + NAME_LENGTH;
+	}
 }
 
 void protocol::requestPublicKey() {
-	request r(1102);
-	//conn->sendRequest(r);
-	//response res = conn->getResponse();
+	std::string client_id;
+	std::cout << "Please enter the client's id: ";
+	std::cin >> client_id;
+	if (client_id.length() != UUID_SIZE) {
+		std::cerr << "Error: Invalid client's id!" << std::endl;
+		return;
+	}
+	
+	// create request
+	request* req = new request(prof.getUuid(), prof.getVersion(), 1102, client_id);
+
+	// send request & get response
+	response* res = sendAndReceive(req);
+
+	printf("Requested public key: %s\n", &res->get_payload().c_str()[UUID_SIZE]);
 }
 
 void protocol::requestMessages() {
@@ -124,4 +153,15 @@ void protocol::sendSymmetricKey() {
 }
 
 void protocol::exitProgram() {
+}
+
+response* protocol::sendAndReceive(request* req) {
+	conn->sendRequest(*req);
+	response* res = conn->getResponse();
+
+	if (res->get_code() == 9000) {
+		throw std::runtime_error(res->get_payload());
+	}
+
+	return res;
 }

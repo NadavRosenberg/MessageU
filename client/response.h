@@ -20,6 +20,7 @@ protected:
 public:
 	response(std::string&);
 	~response();
+	uint16_t get_code();
 	int get_payload_size();
 	void set_payload(std::string);
 	std::string get_payload();
