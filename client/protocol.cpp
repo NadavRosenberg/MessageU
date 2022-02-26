@@ -63,8 +63,9 @@ void protocol::registerUser() {
 
 	// analyze response's payload
 	std::string payload_res = res->get_payload();
-	char* uuid = new char[16];
-	memcpy(uuid, payload_res.c_str(), 16);
+	char* uuid = new char[UUID_SIZE + 1];
+	memcpy(uuid, payload_res.c_str(), UUID_SIZE);
+	uuid[UUID_SIZE] = '\0';
 
 	// save user
 	prof->setData(name, uuid, keys.private_key);
@@ -116,6 +117,46 @@ void protocol::requestMessages() {
 
 	// send request & get response
 	response* res = sendAndReceive(req);
+	
+	// print messages
+	//message* messages = get_messages(req);
+	std::string payload_res = res->get_payload();
+
+	char* pchr = new char[res->get_payload_size() + 1]{ 0 };
+	memcpy(pchr, payload_res.c_str(), res->get_payload_size());
+
+	int offset = 0;
+	while (offset < res->get_payload_size()) {
+		printf("From: %.*s\n", UUID_SIZE, &pchr[offset]);
+		offset += UUID_SIZE + sizeof(uint32_t);
+		printf("Content:\n");
+
+		char msg_type;
+		memcpy(&msg_type, &pchr[offset], sizeof(char));
+		offset += sizeof(char);
+
+		if (msg_type == '1') {
+			offset += sizeof(uint32_t);
+			printf("Request for symmetric key\n");
+		}
+		else if (msg_type == '2') {
+			offset += sizeof(uint32_t);
+			printf("Symmetric key received\n");
+			offset += SYMMETRIC_KEY_LENGTH;
+		}
+		else if (msg_type == '3') {
+			uint32_t content_size;
+			memcpy(&content_size, &pchr[offset], sizeof(uint32_t));
+			offset += sizeof(uint32_t);
+			printf("%.*s\n", content_size, &pchr[offset]);
+			offset += content_size;
+		}
+		else {
+			printf("Something went wrong!\n");
+			return;
+		}
+		printf("-----<EOM>-----\n");
+	}
 }
 
 void protocol::sendMessage() {
@@ -182,7 +223,7 @@ void protocol::sendSymmetricKey() {
 	std::getline(std::cin >> std::ws, target);
 
 	// create request
-	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + PUBLIC_SYMMETRIC_LENGTH;
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + SYMMETRIC_KEY_LENGTH;
 	char* payload_req = new char[payload_size] { 0 };
 
 	int offset = 0;
@@ -190,8 +231,13 @@ void protocol::sendSymmetricKey() {
 	offset += UUID_SIZE;
 	payload_req[offset] = '\2';
 	offset += sizeof(char);
-	uint32_t content_size = PUBLIC_SYMMETRIC_LENGTH;
-	memcpy(&payload_req[offset], &content_size, PUBLIC_SYMMETRIC_LENGTH);
+	uint32_t content_size = SYMMETRIC_KEY_LENGTH;
+	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	rsa_keys keys = encryption::getRSAKeys();
+	memcpy(&payload_req[offset], keys.public_key.c_str(), SYMMETRIC_KEY_LENGTH);
+
 
 	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
 
@@ -206,7 +252,7 @@ void protocol::exitProgram() {
 }
 
 response* protocol::sendAndReceive(request* req) {
-	conn->sendRequest(*req);
+	conn->sendRequest(req);
 	response* res = conn->getResponse();
 
 	if (res->get_code() == 9000) {

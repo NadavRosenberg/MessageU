@@ -17,7 +17,7 @@ class profile
 {
 private:
 	std::string name;
-	char uuid[16];
+	char uuid[UUID_SIZE + 1];
 	std::string private_key;
 public:
 	void fetchData();

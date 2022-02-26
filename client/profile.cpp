@@ -22,6 +22,8 @@ void profile::fetchData() {
 
 				std::getline(content_s, segment, '\n');
 				private_key = segment;
+
+				file.close();
 			}
 			catch (int num) {
 				std::cerr << "Failed fetching user data!" << std::endl;
@@ -46,7 +48,7 @@ void profile::fetchData() {
 
 void profile::setData(std::string _name, char* _uuid, std::string _private_key) {
 	name = _name;
-	memcpy(uuid, _uuid, 16);
+	memcpy(uuid, _uuid, UUID_SIZE + 1);
 	private_key = _private_key;
 
 	std::ofstream file(PROFILE_FILENAME);
@@ -56,6 +58,8 @@ void profile::setData(std::string _name, char* _uuid, std::string _private_key) 
 		file << name << '\n';
 		file << uuid << '\n';
 		file << private_key;
+
+		file.close();
 	}
 	else {
 		std::cerr << "Something happend while opening the file!" << std::endl;

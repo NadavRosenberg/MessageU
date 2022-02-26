@@ -54,10 +54,17 @@ class protocol:
     def requestMessages(self, request):
         # create payload
         messages = self.db.get_messages(request.get_client_id())
-        #payload = ''.join([user_id + user_name for user_id, user_name in messages if user_id != client_id])
+        payload = b''
+        for msg_id, to_client, from_client, msg_type, content in messages:
+            payload += to_client.encode()
+            payload += msg_id.to_bytes(4, 'little')
+            payload += msg_type.encode()
+            payload += len(content).to_bytes(4, 'little')
+            if len(content) > 0:
+                payload += content.encode()
 
         # create response
-        return Response(2104, message.get_to_client() + str(msg_id))
+        return Response(2104, payload.decode('utf-8', 'replace'))
 
     def default(self, request):
         print('Something went wrong ..')
@@ -90,7 +97,11 @@ class protocol:
         return int.from_bytes(unpacked[3], "little")
     
     def get_message(self, request):
-        data_bytes = bytes(request.get_payload(), 'utf-8')
+        data_bytes = request.get_payload()
         content_size = len(data_bytes) - struct.calcsize('16s c 4s');
         to_client, msg_type, content_size, content = struct.unpack("16s c 4s %ds" % content_size, data_bytes)
-        return Message(to_client, request.get_client_id(), msg_type, content)
+        if int.from_bytes(content_size, 'little') > 0:
+            #content = struct.unpack("%ds" % int.from_bytes(content_size, 'little'), data_bytes)
+            return Message(to_client, request.get_client_id(), msg_type, content)
+        #to_client, msg_type, content_size, content = struct.unpack("16s c 4s %ds" % content_size, data_bytes)
+        return Message(to_client, request.get_client_id(), msg_type, '')

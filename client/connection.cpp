@@ -21,9 +21,9 @@ response* connection::getResponse()
 	return res;
 }
 
-void connection::sendRequest(request req) {
-	req.print();
-	const std::string& message = req.toString();
+void connection::sendRequest(request* req) {
+	req->print();
+	const std::string& message = req->toString();
 	boost::asio::write(sock, boost::asio::buffer(message));
 }
 

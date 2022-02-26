@@ -6,7 +6,7 @@ class Request:
         self.version = int.from_bytes(version, "little")
         self.code = int.from_bytes(code, "little")
         self.payload_size = len(payload)
-        self.payload = payload.decode('utf-8', 'backslashreplace')
+        self.payload = payload
 
     def print(self):
         print("#####################################################################")

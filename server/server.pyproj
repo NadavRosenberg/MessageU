@@ -23,12 +23,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="db.py" />
-    <Compile Include="payload.py" />
     <Compile Include="protocol.py" />
     <Compile Include="port.py" />
     <Compile Include="request.py" />
     <Compile Include="response.py" />
-    <Compile Include="tmp.py" />
     <Compile Include="connection.py" />
     <Compile Include="message.py" />
     <Compile Include="client.py" />

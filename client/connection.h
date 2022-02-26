@@ -18,6 +18,6 @@ public:
 	connection(std::string, std::string);
 	boost::asio::ip::tcp::socket& connect();
 	response* getResponse();
-	void sendRequest(request);
+	void sendRequest(request*);
 };
 

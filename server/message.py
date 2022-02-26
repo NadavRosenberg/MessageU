@@ -6,7 +6,10 @@ class Message(Request):
         self.to_client = to_client.decode('utf-8', 'backslashreplace')
         self.from_client = from_client
         self.msg_type = int.from_bytes(msg_type, "little")
-        self.content = content.decode('utf-8', 'backslashreplace')
+        if len(content) > 0:
+            self.content = content.decode('utf-8')
+        else:
+            self.content = ''
 
     def get_data(self):
         return (self.to_client, self.from_client, self.msg_type, self.content)

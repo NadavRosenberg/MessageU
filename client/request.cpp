@@ -14,19 +14,6 @@ request::request(char* uuid, char version, uint16_t code, std::string payload): 
 	r->payload = payload;
 }
 
-
-request::request(uint16_t code, std::string payload): r(new Request) {
-	//r->h.client_id = prof.getUuid();
-	//memcpy(r->h.client_id, profile::getUuid(), UUID_SIZE);
-	r->h.version = profile::getVersion();
-	r->h.code = code;
-	r->h.payload_size = payload.length();
-	r->payload = payload;
-}
-
-request::request(uint16_t code): request::request(code, "") {
-}
-
 request::~request() {
 	delete r;
 }

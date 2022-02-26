@@ -18,7 +18,7 @@ class response {
 protected:
 	Response* r;
 public:
-	response(std::string&);
+	response(std::string);
 	~response();
 	uint16_t get_code();
 	int get_payload_size();
