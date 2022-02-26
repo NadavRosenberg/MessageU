@@ -140,7 +140,7 @@ void protocol::requestMessages() {
 			printf("Request for symmetric key\n");
 		}
 		else if (msg_type == '2') {
-			offset += sizeof(uint32_t);
+			offset += sizeof(uint32_t) + sizeof(char) + sizeof(char);
 			printf("Symmetric key received\n");
 			offset += SYMMETRIC_KEY_LENGTH;
 		}
