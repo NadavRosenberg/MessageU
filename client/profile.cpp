@@ -7,17 +7,18 @@ void profile::fetchData() {
 		std::string content;
 
 		if (file.is_open()) {
-			file >> content; // pipe file's content into stream
+			std::stringstream content_s;
+			//file >> content; // pipe file's content into stream
+			content_s << file.rdbuf();
 
 			try {
-				std::stringstream content_s(content);
 				std::string segment;
 
 				std::getline(content_s, segment, '\n');
 				name = segment;
 
 				std::getline(content_s, segment, '\n');
-				memcpy(&uuid, &segment, UUID_SIZE);
+				memcpy(uuid, segment.c_str(), UUID_SIZE);
 
 				std::getline(content_s, segment, '\n');
 				private_key = segment;

@@ -21,6 +21,7 @@ struct Request {
 class request {
 protected:
 	Request* r;
+	void Construct(int new_number);
 	request();
 public:
 	request(uint16_t code);

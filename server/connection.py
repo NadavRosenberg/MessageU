@@ -38,9 +38,10 @@ class connection:
                     req.print()
                     res = self.protocol.handler(req)
                     res.print()
-                    sent = sock.send(res.to_bytes())  # Should be ready to write
+                    sock.send(res.to_bytes())  # Should be ready to write
                 except Exception as e:
                     print('Something went wrong, Error:', e)
+                    sock.send(Response(9000, str(e)))
                 finally:
                     data.outb = b''
 

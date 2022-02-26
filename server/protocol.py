@@ -1,6 +1,7 @@
 import struct
 from request import Request
 from response import Response
+from message import Message
 
 UUID_SIZE = 16
 HEADER_SIZE = 23
@@ -43,13 +44,24 @@ class protocol:
         return Response(2102, client_id + public_key)
 
     def sendMessage(self, request):
-        print('in 1103')
+        # create payload
+        message = self.get_message(request)
+        msg_id = self.db.save_message(message)
+
+        # create response
+        return Response(2103, message.get_to_client() + str(msg_id))
 
     def requestMessages(self, request):
-        print('in 1104')
+        # create payload
+        messages = self.db.get_messages(request.get_client_id())
+        #payload = ''.join([user_id + user_name for user_id, user_name in messages if user_id != client_id])
 
-    def default(self):
+        # create response
+        return Response(2104, message.get_to_client() + str(msg_id))
+
+    def default(self, request):
         print('Something went wrong ..')
+        raise Exception('Request\' code is invalid!')
 
     def handler(self, request):
         switcher = {
@@ -73,7 +85,12 @@ class protocol:
         unpacked = struct.unpack("16s c 2s 4s %ds" % payload_size, data_bytes)
         return Request(*unpacked)
 
-
     def get_payload_size(self, header_bytes):
         unpacked = struct.unpack("16s c 2s 4s", header_bytes)
         return int.from_bytes(unpacked[3], "little")
+    
+    def get_message(self, request):
+        data_bytes = bytes(request.get_payload(), 'utf-8')
+        content_size = len(data_bytes) - struct.calcsize('16s c 4s');
+        to_client, msg_type, content_size, content = struct.unpack("16s c 4s %ds" % content_size, data_bytes)
+        return Message(to_client, request.get_client_id(), msg_type, content)

@@ -1,14 +1,32 @@
 #include "message.h"
+#include "global.h"
 
-message::message(std::string target, std::string msgType, std::string msgContent) {
-	//r->h.client_id = target;
-	r->h.version = profile::getVersion();
-	r->h.code = (uint16_t)1103;
-	r->payload = target + msgType + std::to_string(msgContent.length()) + msgContent;
-	r->h.payload_size = r->payload.length();
+message::message(char* uuid, char version, std::string target, char msgType, std::string msgContent) {
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + msgContent.length();
+	char* payload = new char[payload_size]{ 0 };
+
+	int offset = 0;
+	memcpy(payload, target.c_str(), UUID_SIZE);
+	offset += UUID_SIZE;
+	payload[offset] = msgType;
+	offset += sizeof(char);
+	int content_size = msgContent.length();
+	memcpy(&payload[offset], &content_size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(&payload[offset], msgContent.c_str(), content_size);
+
+	memcpy(r->h.client_id, uuid, UUID_SIZE);
+	r->h.version = version;
+	r->h.code = 1103;
+	r->h.payload_size = payload_size;
+	r->payload = payload;
+}
+
+message::message(char* uuid, char version, std::string target, char msgType): message::message(uuid, version, target, msgType, "") {
 }
 
 message::message(std::string target, std::string msgType) {
+
 	//r->h.client_id = target;
 	//r->h.version = prof.getVersion();
 	r->h.code = 1103;

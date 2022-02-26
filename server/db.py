@@ -2,6 +2,7 @@ import sqlite3
 import uuid
 from os import path
 from datetime import datetime
+from message import Message
 
 DB_NAME = 'server.db'
 
@@ -10,27 +11,37 @@ class db:
         try:
             self.conn = sqlite3.connect(DB_NAME)
                 
-            if self.is_clients_table_exist() == False:
+            if self.is_table_exist('clients') == False:
                 self.create_clients_table()
+                
+            if self.is_table_exist('messages') == False:
+                self.create_messages_table()
 
-        except:
-            print('Failed to open db!')
+        except Exception as e:
+            print('Failed to open db, Error: ', e)
 
     def __del__(self):
         self.conn.commit()
         self.conn.close()
-
-    def is_clients_table_exist(self):
+        
+    def is_table_exist(self, table_name):
         cur = self.conn.cursor()
         cur.execute('''
-            SELECT name FROM sqlite_master WHERE type='table' AND name='clients'
-        ''')
+            SELECT name FROM sqlite_master WHERE type='table' AND name=?
+        ''', (table_name,))
         return len(cur.fetchall()) > 0
-
+    
     def create_clients_table(self):
         cur = self.conn.cursor()
         cur.execute('''
             CREATE TABLE clients(id VARCHAR(16) PRIMARY KEY, user_name VARCHAR(255) UNIQUE, public_key VARCHAR(160), last_seen DATE)
+        ''')
+        self.conn.commit()
+
+    def create_messages_table(self):
+        cur = self.conn.cursor()
+        cur.execute('''
+            CREATE TABLE messages(id INTEGER PRIMARY KEY AUTOINCREMENT, to_client VARCHAR(16), from_client VARCHAR(16), type CHAR, content BLOB)
         ''')
         self.conn.commit()
 
@@ -72,3 +83,21 @@ class db:
 
         return cur.fetchone()[0]
 
+    def save_message(self, message):
+        cur = self.conn.cursor()
+        
+        cur.execute('''
+            INSERT INTO messages (to_client, from_client, type, content) VALUES(?, ?, ?, ?)
+        ''', message.get_data())
+
+        self.conn.commit()
+        return cur.lastrowid
+
+    def get_messages(self, client_id):
+        cur = self.conn.cursor()
+
+        cur.execute('''
+            SELECT * FROM messages WHERE to_client=?
+        ''', (client_id,))
+
+        return cur.fetchall()

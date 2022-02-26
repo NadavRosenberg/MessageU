@@ -7,7 +7,7 @@
 class protocol
 {
 private:
-	profile prof;
+	profile* prof;
 	connection* conn;
 	void registerUser();
 	void requestClientsList();
@@ -19,7 +19,7 @@ private:
 	void exitProgram();
 	response* sendAndReceive(request*);
 public:
-	protocol(connection*);
+	protocol(connection*, profile*);
 	void handle(int);
 };
 

@@ -3,7 +3,7 @@
 #include "message.h"
 #include "global.h"
 
-protocol::protocol(connection* c): conn(c), prof(profile()) {
+protocol::protocol(connection* c, profile* p): conn(c), prof(p) {
 }
 
 void protocol::handle(int command_code) {
@@ -42,7 +42,7 @@ void protocol::handle(int command_code) {
 void protocol::registerUser() {
 	std::string name;
 	std::cout << "Please enter user name: ";
-	std::cin >> name;
+	std::getline(std::cin >> std::ws, name);
 	if (name.length() > NAME_LENGTH - 1) {
 		std::cerr << "Invalid name!" << std::endl;
 		return;
@@ -56,7 +56,7 @@ void protocol::registerUser() {
 	payload_req[NAME_LENGTH] = '\0';
 	memcpy(&payload_req[NAME_LENGTH], keys.public_key.c_str(), PUBLIC_KEY_LENGTH);
 
-	request* req = new request(prof.getUuid(), prof.getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
 
 	// send request & get response
 	response* res = sendAndReceive(req);
@@ -67,12 +67,12 @@ void protocol::registerUser() {
 	memcpy(uuid, payload_res.c_str(), 16);
 
 	// save user
-	prof.setData(name, uuid, keys.private_key);
+	prof->setData(name, uuid, keys.private_key);
 }
 
 void protocol::requestClientsList() {
     // create request
-	request* req = new request(prof.getUuid(), prof.getVersion(), 1101);
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1101);
 
 	// send request & get response
 	response* res = sendAndReceive(req);
@@ -95,14 +95,14 @@ void protocol::requestClientsList() {
 void protocol::requestPublicKey() {
 	std::string client_id;
 	std::cout << "Please enter the client's id: ";
-	std::cin >> client_id;
+	std::getline(std::cin >> std::ws, client_id);
 	if (client_id.length() != UUID_SIZE) {
 		std::cerr << "Error: Invalid client's id!" << std::endl;
 		return;
 	}
 	
 	// create request
-	request* req = new request(prof.getUuid(), prof.getVersion(), 1102, client_id);
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1102, client_id);
 
 	// send request & get response
 	response* res = sendAndReceive(req);
@@ -111,45 +111,95 @@ void protocol::requestPublicKey() {
 }
 
 void protocol::requestMessages() {
-	request r(1102);
-	//conn->sendRequest(r);
-	//response res = conn->getResponse();
+	// create request
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1104);
+
+	// send request & get response
+	response* res = sendAndReceive(req);
 }
 
 void protocol::sendMessage() {
 	std::string target;
-	std::cout << "Please enter user to contact: ";
-	std::cin >> target;
+	std::cout << "Please enter user's id to contact: ";
+	std::getline(std::cin >> std::ws, target);
 
 	std::string msgContent;
 	std::cout << "Please enter message content: ";
-	std::cin >> msgContent;
-		
-	message m(target, "3", msgContent);
-	//conn->sendRequest(m);
-	//response res = conn->getResponse();
+	std::getline(std::cin >> std::ws, msgContent);
+
+	// create request
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + msgContent.length();
+	char* payload_req = new char[payload_size]{ 0 };
+
+	int offset = 0;
+	memcpy(payload_req, target.c_str(), UUID_SIZE);
+	offset += UUID_SIZE;
+	payload_req[offset] = '\3';
+	offset += sizeof(char);
+	uint32_t content_size = msgContent.length();
+	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(&payload_req[offset], msgContent.c_str(), msgContent.length());
+
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
+
+	// create request
+	//message* msg = new message(prof.getUuid(), prof.getVersion(), target, '\3', msgContent);
+
+	// send request & get response
+	response* res = sendAndReceive(req);
 }
 
 void protocol::requestSymmetricKey() {
 	std::string target;
-	std::cout << "Please enter user to contact: ";
-	std::cin >> target;
+	std::cout << "Please enter user's id to contact: ";
+	std::getline(std::cin >> std::ws, target);
 
-	message m(target, "1");
-	//conn->sendRequest(m);
-	//response res = conn->getResponse();
+	// create request
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t);
+	char* payload_req = new char[payload_size] { 0 };
+
+	int offset = 0;
+	memcpy(payload_req, target.c_str(), UUID_SIZE);
+	offset += UUID_SIZE;
+	payload_req[offset] = '\1';
+	offset += sizeof(char);
+	uint32_t content_size = 0;
+	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
+
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
+
+	// create request
+	//message* msg = new message(prof.getUuid(), prof.getVersion(), target, '\1');
+
+	// send request & get response
+	response* res = sendAndReceive(req);
 }
 
 void protocol::sendSymmetricKey() {
 	std::string target;
-	std::cout << "Please enter user to contact: ";
-	std::cin >> target;
+	std::cout << "Please enter user's id to contact: ";
+	std::getline(std::cin >> std::ws, target);
 
-	std::string key = encryption::getEncryptedSymmetricKey();
+	// create request
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + PUBLIC_SYMMETRIC_LENGTH;
+	char* payload_req = new char[payload_size] { 0 };
 
-	message m(target, "2", key);
-	//conn->sendRequest(m);
-	//response res = conn->getResponse();
+	int offset = 0;
+	memcpy(payload_req, target.c_str(), UUID_SIZE);
+	offset += UUID_SIZE;
+	payload_req[offset] = '\2';
+	offset += sizeof(char);
+	uint32_t content_size = PUBLIC_SYMMETRIC_LENGTH;
+	memcpy(&payload_req[offset], &content_size, PUBLIC_SYMMETRIC_LENGTH);
+
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
+
+	// create request
+	//message* msg = new message(prof.getUuid(), prof.getVersion(), target, '\2', "public_key_of_target");
+
+	// send request & get response
+	response* res = sendAndReceive(req);
 }
 
 void protocol::exitProgram() {

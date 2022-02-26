@@ -21,7 +21,7 @@ private:
 	std::string private_key;
 public:
 	void fetchData();
-	void profile::setData(std::string, char*, std::string);
+	void setData(std::string, char*, std::string);
 	bool isExist();
 	std::string getName();
 	char* getUuid();
