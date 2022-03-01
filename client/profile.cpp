@@ -38,9 +38,7 @@ void profile::fetchData() {
 	else {
 		std::ofstream file(PROFILE_FILENAME);
 
-		rsa_keys keys = encryption::getRSAKeys();
-
-		file << "\n\n" << keys.public_key << std::endl;
+		file << "\n\n" << private_key << std::endl;
 
 		file.close();
 	}

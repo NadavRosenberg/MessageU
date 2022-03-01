@@ -1,65 +1,81 @@
 #include "protocol.h"
-#include "request.h"
-#include "message.h"
-#include "global.h"
+#include "RSAWrapper.h"
 
-protocol::protocol(connection* c, profile* p): conn(c), prof(p) {
+protocol::protocol(connection* c, profile* p, users* u) : conn(c), prof(p), _users(u)
+{
+	RSAPrivateWrapper pw;
+	public_key = pw.getPublicKey();
+	private_key = pw.getPrivateKey();
 }
 
-void protocol::handle(int command_code) {
-	try {
-		switch (command_code) {
-			case 110:
-				registerUser();
-				break;
-			case 120:
-				requestClientsList();
-				break;
-			case 130:
-				requestPublicKey();
-				break;
-			case 140:
-				requestMessages();
-				break;
-			case 150:
-				sendMessage();
-				break;
-			case 151:
-				requestSymmetricKey();
-				break;
-			case 152:
-				sendSymmetricKey();
-				break;
-			default:
-				std::cerr << "Invalid command! please try again .." << std::endl;
-		}
-	}
-	catch (const std::exception& e)	{
-		std::cout << "Server responed with an error: " << e.what() << std::endl;
-	}
-}
-
-void protocol::registerUser() {
-	std::string name;
-	std::cout << "Please enter user name: ";
-	std::getline(std::cin >> std::ws, name);
-	if (name.length() > NAME_LENGTH - 1) {
-		std::cerr << "Invalid name!" << std::endl;
-		return;
-	}
-
-	rsa_keys keys = encryption::getRSAKeys();
-
-	// create request
+void protocol::send1100(std::string name)
+{
+	// create request's payload
 	char* payload_req = new char[NAME_LENGTH + PUBLIC_KEY_LENGTH]{ 0 };
 	memcpy(payload_req, name.c_str(), name.length());
-	payload_req[NAME_LENGTH] = '\0';
-	memcpy(&payload_req[NAME_LENGTH], keys.public_key.c_str(), PUBLIC_KEY_LENGTH);
+	payload_req[name.length()] = '\0';
+	memcpy(&payload_req[NAME_LENGTH], public_key.c_str(), PUBLIC_KEY_LENGTH);
 
+	// create & send request
 	request* req = new request(prof->getUuid(), prof->getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
+	conn->sendRequest(req);
+}
 
-	// send request & get response
-	response* res = sendAndReceive(req);
+void protocol::send1101()
+{
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1101);
+	conn->sendRequest(req);
+}
+
+void protocol::send1102(std::string client_id)
+{
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1102, client_id);
+	conn->sendRequest(req);
+}
+
+void protocol::send1103(message msg)
+{
+	// add symmetric key (if needed)
+	if (msg.getType() == '\2')
+	{
+		msg.setContentSize(SYMMETRIC_KEY_LENGTH);
+		msg.setContent(public_key);
+	}
+
+	// ecrypt the message
+	RSAPublicWrapper pw(private_key);
+	std::string plain = msg.getContent();
+	std::string ciper = pw.encrypt(plain);
+	msg.setContent(ciper);
+
+	// create request's payload
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + ciper.length();
+	char* payload_req = new char[payload_size] { 0 };
+
+	int offset = 0;
+	memcpy(payload_req, msg.getClientId().c_str(), UUID_SIZE);
+	offset += UUID_SIZE;
+	payload_req[offset] = msg.getType();
+	offset += sizeof(char);
+	uint32_t content_size = ciper.length();
+	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(&payload_req[offset], ciper.c_str(), ciper.length());
+
+	// create & send request
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
+	conn->sendRequest(req);
+}
+
+void protocol::send1104()
+{
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1104);
+	conn->sendRequest(req);
+}
+
+void protocol::handle2100(std::string name)
+{
+	response* res = getResponse();
 
 	// analyze response's payload
 	std::string payload_res = res->get_payload();
@@ -68,15 +84,12 @@ void protocol::registerUser() {
 	uuid[UUID_SIZE] = '\0';
 
 	// save user
-	prof->setData(name, uuid, keys.private_key);
+	prof->setData(name, uuid, private_key);
 }
 
-void protocol::requestClientsList() {
-    // create request
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1101);
-
-	// send request & get response
-	response* res = sendAndReceive(req);
+void protocol::handle2101()
+{
+	response* res = getResponse();
 
 	// analyze response's payload
 	std::string payload_res = res->get_payload();
@@ -84,40 +97,34 @@ void protocol::requestClientsList() {
 	char* pchr = new char[res->get_payload_size() + 1]{ 0 };
 	memcpy(pchr, payload_res.c_str(), res->get_payload_size());
 
-	// print users
-	std::cout << "Users:" << std::endl;
+	// save users
+	int offset = 0;
 	for (int i = 0; i < amount; i++) {
-		printf("# %.*s ", NAME_LENGTH, pchr + UUID_SIZE);
-		printf("(%.*s)\n", UUID_SIZE, pchr);
-		pchr += UUID_SIZE + NAME_LENGTH;
+		std::string uuid = std::string(&pchr[offset], UUID_SIZE);
+		std::string name = std::string(&pchr[offset + UUID_SIZE], NAME_LENGTH);
+		_users->add_user(uuid, name);
+		offset += UUID_SIZE + NAME_LENGTH;
 	}
+
+	// print users
+	_users->print();
 }
 
-void protocol::requestPublicKey() {
-	std::string client_id;
-	std::cout << "Please enter the client's id: ";
-	std::getline(std::cin >> std::ws, client_id);
-	if (client_id.length() != UUID_SIZE) {
-		std::cerr << "Error: Invalid client's id!" << std::endl;
-		return;
-	}
-	
-	// create request
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1102, client_id);
-
-	// send request & get response
-	response* res = sendAndReceive(req);
-
+void protocol::handle2102()
+{
+	response* res = getResponse();
 	printf("Requested public key: %s\n", &res->get_payload().c_str()[UUID_SIZE]);
 }
 
-void protocol::requestMessages() {
-	// create request
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1104);
+void protocol::handle2103()
+{
+	response* res = getResponse();
+}
 
-	// send request & get response
-	response* res = sendAndReceive(req);
-	
+void protocol::handle2104()
+{
+	response* res = getResponse();
+
 	// print messages
 	//message* messages = get_messages(req);
 	std::string payload_res = res->get_payload();
@@ -145,9 +152,17 @@ void protocol::requestMessages() {
 			offset += SYMMETRIC_KEY_LENGTH;
 		}
 		else if (msg_type == '3') {
+			// get content size
 			uint32_t content_size;
 			memcpy(&content_size, &pchr[offset], sizeof(uint32_t));
 			offset += sizeof(uint32_t);
+
+			// decrypt the message
+			RSAPrivateWrapper pw(private_key);
+			std::string ciper(pchr, content_size);
+			std::string plain = pw.decrypt(ciper);
+
+			printf("%s\n", plain.c_str());
 			printf("%.*s\n", content_size, &pchr[offset]);
 			offset += content_size;
 		}
@@ -159,104 +174,12 @@ void protocol::requestMessages() {
 	}
 }
 
-void protocol::sendMessage() {
-	std::string target;
-	std::cout << "Please enter user's id to contact: ";
-	std::getline(std::cin >> std::ws, target);
-
-	std::string msgContent;
-	std::cout << "Please enter message content: ";
-	std::getline(std::cin >> std::ws, msgContent);
-
-	// create request
-	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + msgContent.length();
-	char* payload_req = new char[payload_size]{ 0 };
-
-	int offset = 0;
-	memcpy(payload_req, target.c_str(), UUID_SIZE);
-	offset += UUID_SIZE;
-	payload_req[offset] = '\3';
-	offset += sizeof(char);
-	uint32_t content_size = msgContent.length();
-	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(&payload_req[offset], msgContent.c_str(), msgContent.length());
-
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
-
-	// create request
-	//message* msg = new message(prof.getUuid(), prof.getVersion(), target, '\3', msgContent);
-
-	// send request & get response
-	response* res = sendAndReceive(req);
-}
-
-void protocol::requestSymmetricKey() {
-	std::string target;
-	std::cout << "Please enter user's id to contact: ";
-	std::getline(std::cin >> std::ws, target);
-
-	// create request
-	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t);
-	char* payload_req = new char[payload_size] { 0 };
-
-	int offset = 0;
-	memcpy(payload_req, target.c_str(), UUID_SIZE);
-	offset += UUID_SIZE;
-	payload_req[offset] = '\1';
-	offset += sizeof(char);
-	uint32_t content_size = 0;
-	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
-
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
-
-	// create request
-	//message* msg = new message(prof.getUuid(), prof.getVersion(), target, '\1');
-
-	// send request & get response
-	response* res = sendAndReceive(req);
-}
-
-void protocol::sendSymmetricKey() {
-	std::string target;
-	std::cout << "Please enter user's id to contact: ";
-	std::getline(std::cin >> std::ws, target);
-
-	// create request
-	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + SYMMETRIC_KEY_LENGTH;
-	char* payload_req = new char[payload_size] { 0 };
-
-	int offset = 0;
-	memcpy(payload_req, target.c_str(), UUID_SIZE);
-	offset += UUID_SIZE;
-	payload_req[offset] = '\2';
-	offset += sizeof(char);
-	uint32_t content_size = SYMMETRIC_KEY_LENGTH;
-	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-
-	rsa_keys keys = encryption::getRSAKeys();
-	memcpy(&payload_req[offset], keys.public_key.c_str(), SYMMETRIC_KEY_LENGTH);
-
-
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
-
-	// create request
-	//message* msg = new message(prof.getUuid(), prof.getVersion(), target, '\2', "public_key_of_target");
-
-	// send request & get response
-	response* res = sendAndReceive(req);
-}
-
-void protocol::exitProgram() {
-}
-
-response* protocol::sendAndReceive(request* req) {
-	conn->sendRequest(req);
+response* protocol::getResponse()
+{
 	response* res = conn->getResponse();
 
 	if (res->get_code() == 9000) {
-		throw std::runtime_error(res->get_payload());
+		throw std::runtime_error("Server responed with an error: " + res->get_payload());
 	}
 
 	return res;

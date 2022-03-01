@@ -27,9 +27,6 @@
     <ClCompile Include="protocol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="encryption.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,7 +45,13 @@
     <ClCompile Include="response.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RSAWrapper.cpp">
+    <ClCompile Include="C:\Users\nadav.rosenberg\Downloads\cryptopp_wrapper\cryptopp_wrapper\cryptopp_wrapper\RSAWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="users.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtocolWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,9 +74,6 @@
     <ClInclude Include="protocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="encryption.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -86,7 +86,13 @@
     <ClInclude Include="global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RSAWrapper.h">
+    <ClInclude Include="C:\Users\nadav.rosenberg\Downloads\cryptopp_wrapper\cryptopp_wrapper\cryptopp_wrapper\RSAWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="users.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProtocolWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

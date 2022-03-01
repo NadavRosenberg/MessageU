@@ -7,7 +7,7 @@ class Message(Request):
         self.from_client = from_client
         self.msg_type = int.from_bytes(msg_type, "little")
         if len(content) > 0:
-            self.content = content.decode('utf-8')
+            self.content = content
         else:
             self.content = ''
 

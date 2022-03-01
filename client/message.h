@@ -1,13 +1,21 @@
 #pragma once
-#include "request.h"
+#include <iostream>
 
-//enum MSG_TYPE { REQUEST_SYMMETRIC_KEY = 1, SEND_SYMMETRIC_KEY, TEXT_MESSAGE };
-
-class message : public request
+class message
 {
+	std::string client_id;
+	char msg_type;
+	uint32_t content_size;
+	std::string content;
 public:
-	message(char* uuid, char version, std::string target, char msgType, std::string msgContent);
-	message(char* uuid, char version, std::string target, char msgType);
-	message(std::string target, std::string msgType);
+	//message(char* uuid, char version, std::string target, char msgType, std::string msgContent);
+	//message(char* uuid, char version, std::string target, char msgType);
+	message(std::string client_id, char msg_type, uint32_t content_size, std::string content);
+	message(std::string client_id, char msg_type);
+	std::string getClientId();
+	char getType();
+	std::string getContent();
+	void setContent(std::string);
+	void setContentSize(uint32_t);
 };
 

@@ -1,25 +1,28 @@
 #pragma once
 #include <iostream>
+#include "message.h"
 #include "connection.h"
-#include "encryption.h"
-#include "profile.h"
+#include "users.h"
 
 class protocol
 {
 private:
-	profile* prof;
 	connection* conn;
-	void registerUser();
-	void requestClientsList();
-	void requestPublicKey();
-	void requestMessages();
-	void sendMessage();
-	void requestSymmetricKey();
-	void sendSymmetricKey();
-	void exitProgram();
-	response* sendAndReceive(request*);
+	profile* prof;
+	users* _users;
+	std::string private_key;
+	std::string public_key;
 public:
-	protocol(connection*, profile*);
-	void handle(int);
+	protocol(connection*, profile*, users*);
+	void send1100(std::string);
+	void send1101();
+	void send1102(std::string);
+	void send1103(message);
+	void send1104();
+	void handle2100(std::string);
+	void handle2101();
+	void handle2102();
+	void handle2103();
+	void handle2104();
+	response* getResponse();
 };
-

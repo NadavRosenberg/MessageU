@@ -2,7 +2,7 @@
 #include <string>
 #include "server.h"
 #include "connection.h"
-#include "protocol.h"
+#include "ProtocolWrapper.h"
 #include "menu.h"
 
 int main() {
@@ -19,8 +19,14 @@ int main() {
 	profile* prof = new profile();
 	prof->fetchData();
 
+	// init users
+	users usr;
+
 	// init protocol
-	protocol prcl(c, prof);
+	protocol prcl(c, prof, &usr);
+
+	// init protocol's wrapper
+	ProtocolWrapper prwr(&prcl, &usr);
 
 	// init menu
 	Menu menu = Menu();
@@ -31,7 +37,7 @@ int main() {
 		menu.show_menu();
 		std::cout << "? ";
 		std::cin >> command_code;
-		prcl.handle(command_code);
+		prwr.handle(command_code);
 	}
 
 	return 0;

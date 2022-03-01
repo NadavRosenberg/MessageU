@@ -5,7 +5,7 @@ class Request:
         self.client_id = client_id.decode('utf-8')
         self.version = int.from_bytes(version, "little")
         self.code = int.from_bytes(code, "little")
-        self.payload_size = len(payload)
+        self.payload_size = int.from_bytes(payload_size, "little")
         self.payload = payload
 
     def print(self):
@@ -22,6 +22,9 @@ class Request:
 
     def get_code(self):
         return self.code
+
+    def get_payload_size(self):
+        return self.payload_size
 
     def get_payload(self):
         return self.payload

@@ -1,5 +1,6 @@
 #include "encryption.h"
 #include "protocol.h"
+#include "cryptopp/rsa.h"
 
 rsa_keys encryption::getRSAKeys()
 {

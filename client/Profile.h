@@ -5,7 +5,6 @@
 #include <vector>
 #include <sstream>
 #include <filesystem>
-#include "encryption.h"
 #include "utils.h"
 #include "global.h"
 

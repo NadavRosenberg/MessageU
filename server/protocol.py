@@ -14,8 +14,9 @@ class protocol:
     def registerUser(self, request):
         # create payload
         payload = request.get_payload()
-        name = payload[:255]
-        public_key = payload[255:]
+        name, public_key = struct.unpack("255s %ds" % (request.get_payload_size() - 255), payload)
+        #name = payload[:255]
+        #public_key = payload[255:]
         
         # create response
         try:
@@ -28,17 +29,17 @@ class protocol:
         # create payload
         users = self.db.get_users()
         client_id = request.get_client_id()
-        payload = ''.join([user_id + user_name for user_id, user_name in users if user_id != client_id])
+        payload = ''.join([user_id + user_name.decode("utf-8") for user_id, user_name in users if user_id != client_id])
 
         # create response
         return Response(2101, payload)
 
     def requestPublicKey(self, request):
         # create payload
-        client_id = request.get_payload()
+        client_id = request.get_payload().decode('utf-8')
         if len(client_id) != UUID_SIZE:
             raise Exception() 
-        public_key = self.db.get_user_public_key(client_id);
+        public_key = self.db.get_user_public_key(client_id).decode('cp437');
 
         # create response
         return Response(2102, client_id + public_key)
@@ -49,7 +50,7 @@ class protocol:
         msg_id = self.db.save_message(message)
 
         # create response
-        return Response(2103, message.get_to_client() + str(msg_id))
+        return Response(2103, bytes(message.get_to_client() + str(msg_id), 'utf-8'))
 
     def requestMessages(self, request):
         # create payload
@@ -61,10 +62,10 @@ class protocol:
             payload += msg_type.encode()
             payload += len(content).to_bytes(4, 'little')
             if len(content) > 0:
-                payload += content.encode()
+                payload += content
 
         # create response
-        return Response(2104, payload.decode('utf-8', 'replace'))
+        return Response(2104, payload.decode())
 
     def default(self, request):
         print('Something went wrong ..')
