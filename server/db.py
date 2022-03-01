@@ -100,4 +100,11 @@ class db:
             SELECT * FROM messages WHERE to_client=?
         ''', (client_id,))
 
-        return cur.fetchall()
+        messages = cur.fetchall()
+
+        cur.execute('''
+            DELETE FROM messages WHERE to_client=?
+        ''', (client_id,))
+
+        self.conn.commit()
+        return messages

@@ -12,6 +12,7 @@ public:
 	message(std::string client_id, char msg_type);
 	std::string getClientId();
 	char getType();
+	uint32_t getContentSize();
 	std::string getContent();
 	void setContent(std::string);
 	void setContentSize(uint32_t);

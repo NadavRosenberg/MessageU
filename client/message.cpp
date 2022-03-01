@@ -54,6 +54,11 @@ char message::getType()
 	return msg_type;
 }
 
+uint32_t message::getContentSize()
+{
+	return content_size;
+}
+
 std::string message::getContent()
 {
 	return content;

@@ -1,5 +1,6 @@
 #include "protocol.h"
 #include "RSAWrapper.h"
+#include "AESWrapper.h"
 
 protocol::protocol(connection* c, profile* p, users* u) : conn(c), prof(p), _users(u)
 {
@@ -35,21 +36,44 @@ void protocol::send1102(std::string client_id)
 
 void protocol::send1103(message msg)
 {
-	// add symmetric key (if needed)
-	if (msg.getType() == '\2')
+	try
 	{
-		msg.setContentSize(SYMMETRIC_KEY_LENGTH);
-		msg.setContent(public_key);
+		if (msg.getType() == '\2')
+		{
+			// get user's public key
+			std::string pub_key = _users->get_user_public_key(msg.getClientId());
+
+			// ecrypt the message using public key
+			RSAPublicWrapper pw(pub_key);
+			std::string plain = msg.getContent();
+			std::string ciper = pw.encrypt(plain);
+
+			// save encrypted content to msg
+			msg.setContentSize(ciper.length());
+			msg.setContent(ciper);
+		}
+		else if (msg.getType() == '\3')
+		{
+			// get user's symmetric key
+			std::string symm_key = _users->get_user_symm_key(msg.getClientId());
+
+			// encrypt the message using symmetric key
+			AESWrapper aes(reinterpret_cast<const unsigned char*>(symm_key.c_str()), SYMMETRIC_KEY_LENGTH);
+			std::string ciper = aes.encrypt(msg.getContent().c_str(), msg.getContentSize());
+
+			// save encrypted content to msg
+			msg.setContentSize(ciper.length());
+			msg.setContent(ciper);
+		}
+	}
+	catch (int num)
+	{
+		printf("Something went wrong! try to fetch the key ..");
+		return;
 	}
 
-	// ecrypt the message
-	RSAPublicWrapper pw(public_key);
-	std::string plain = msg.getContent();
-	std::string ciper = pw.encrypt(plain);
-	msg.setContent(ciper);
-
 	// create request's payload
-	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + ciper.length();
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + msg.getContentSize();
 	char* payload_req = new char[payload_size] { 0 };
 
 	int offset = 0;
@@ -57,10 +81,10 @@ void protocol::send1103(message msg)
 	offset += UUID_SIZE;
 	payload_req[offset] = msg.getType();
 	offset += sizeof(char);
-	uint32_t content_size = ciper.length();
+	uint32_t content_size = msg.getContentSize();
 	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
-	memcpy(&payload_req[offset], ciper.c_str(), ciper.length());
+	memcpy(&payload_req[offset], msg.getContent().c_str(), msg.getContentSize());
 
 	// create & send request
 	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
@@ -113,7 +137,19 @@ void protocol::handle2101()
 void protocol::handle2102()
 {
 	response* res = getResponse();
-	printf("Requested public key: %s\n", &res->get_payload().c_str()[UUID_SIZE]);
+
+	std::string uuid(res->get_payload().c_str(), UUID_SIZE);
+	std::string pub_key(res->get_payload().c_str()[UUID_SIZE], PUBLIC_KEY_LENGTH);
+
+	try 
+	{
+		_users->set_user_public_key(uuid, pub_key);
+		printf("Request for public key ended successfully!\n");
+	}
+	catch (int num)
+	{
+		printf("Failed to fetch public key!\n");
+	}
 }
 
 void protocol::handle2103()
@@ -133,7 +169,10 @@ void protocol::handle2104()
 
 	int offset = 0;
 	while (offset < res->get_payload_size()) {
-		printf("From: %.*s\n", UUID_SIZE, &pchr[offset]);
+		// get user's uuid
+		std::string uuid(&pchr[offset], UUID_SIZE);
+
+		printf("From: %.*s\n", UUID_SIZE, uuid.c_str());
 		offset += UUID_SIZE + sizeof(uint32_t);
 		printf("Content:\n");
 
@@ -147,8 +186,22 @@ void protocol::handle2104()
 		}
 		else if (msg_type == '2') {
 			offset += sizeof(uint32_t) + sizeof(char) + sizeof(char);
-			printf("Symmetric key received\n");
-			offset += SYMMETRIC_KEY_LENGTH;
+
+			try
+			{
+				// get symmetric key
+				std::string symm_key(&pchr[offset], SYMMETRIC_KEY_LENGTH);
+				offset += SYMMETRIC_KEY_LENGTH;
+
+				// save symmetric key
+				_users->set_user_symm_key(uuid, symm_key);
+
+				printf("Symmetric key received\n");
+			}
+			catch (int num)
+			{
+				printf("Failed to fetch Symmetric key!\n");
+			}
 		}
 		else if (msg_type == '3') {
 			// get content size

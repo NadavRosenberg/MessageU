@@ -2,7 +2,7 @@
 #include "request.h"
 #include "message.h"
 #include "global.h"
-#include "RSAWrapper.h"
+#include "AESWrapper.h"
 
 ProtocolWrapper::ProtocolWrapper(protocol* p, users* u) : ptcl(p), _users(u)
 {
@@ -66,7 +66,7 @@ void ProtocolWrapper::requestClientsList()
 
 void ProtocolWrapper::requestPublicKey() 
 {
-	// get user from client
+	// get user's uuid from name
 	std::string user_id = getIdFromName();
 
 	// send request & handle response
@@ -82,7 +82,7 @@ void ProtocolWrapper::requestMessages()
 
 void ProtocolWrapper::sendMessage() 
 {
-	// get user from client
+	// get user's uuid from name
 	std::string user_id = getIdFromName();
 
 	std::string msgContent;
@@ -99,7 +99,7 @@ void ProtocolWrapper::sendMessage()
 
 void ProtocolWrapper::requestSymmetricKey() 
 {
-	// get user from client
+	// get user's uuid from name
 	std::string user_id = getIdFromName();
 
 	// create the message
@@ -112,11 +112,19 @@ void ProtocolWrapper::requestSymmetricKey()
 
 void ProtocolWrapper::sendSymmetricKey() 
 {
-	// get user from client
+	// get user's uuid from name
 	std::string user_id = getIdFromName();
 
+	// create symmetric key
+	unsigned char* buffer;
+	AESWrapper::GenerateKey(buffer, SYMMETRIC_KEY_LENGTH);
+	std::string symm_key(reinterpret_cast<char*>(buffer));
+
+	// save symmetric key
+	_users->set_user_symm_key(user_id, symm_key);
+
 	// create the message
-	message msg(user_id, '\2');
+	message msg(user_id, '\2', SYMMETRIC_KEY_LENGTH, symm_key);
 
 	// send request & handle response
 	ptcl->send1103(msg);

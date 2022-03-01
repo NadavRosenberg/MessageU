@@ -112,6 +112,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AESWrapper.cpp" />
     <ClCompile Include="C:\Users\nadav.rosenberg\Downloads\cryptopp_wrapper\cryptopp_wrapper\cryptopp_wrapper\RSAWrapper.cpp" />
     <ClCompile Include="users.cpp" />
     <ClCompile Include="main.cpp" />
@@ -127,6 +128,7 @@
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AESWrapper.h" />
     <ClInclude Include="C:\Users\nadav.rosenberg\Downloads\cryptopp_wrapper\cryptopp_wrapper\cryptopp_wrapper\RSAWrapper.h" />
     <ClInclude Include="users.h" />
     <ClInclude Include="global.h" />
