@@ -55,7 +55,7 @@ class protocol:
         messages = self.db.get_messages(request.get_client_id())
         payload = b''
         for msg_id, to_client, from_client, msg_type, content in messages:
-            payload += to_client.encode()
+            payload += from_client.encode()
             payload += msg_id.to_bytes(4, 'little')
             payload += msg_type.encode()
             payload += len(content).to_bytes(4, 'little')

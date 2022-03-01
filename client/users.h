@@ -19,6 +19,7 @@ public:
 	void add_user(std::string, std::string);
 	void add_users(user[], int);
 	std::string get_user_id(std::string);
+	std::string get_username(std::string);
 	std::string get_user_public_key(std::string);
 	std::string get_user_symm_key(std::string);
 	void set_user_symm_key(std::string, std::string);

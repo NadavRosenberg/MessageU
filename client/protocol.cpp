@@ -172,7 +172,17 @@ void protocol::handle2104()
 		// get user's uuid
 		std::string uuid(&pchr[offset], UUID_SIZE);
 
-		printf("From: %.*s\n", UUID_SIZE, uuid.c_str());
+		// get user's name
+		std::string username = _users->get_username(uuid);
+
+		if (username.length() == 0)
+		{
+			printf("From: %.*s   <request for clients list to reveal>\n", UUID_SIZE, uuid.c_str());
+		}
+		else
+		{
+			printf("From: %s\n", username.c_str());
+		}
 		offset += UUID_SIZE + sizeof(uint32_t);
 		printf("Content:\n");
 

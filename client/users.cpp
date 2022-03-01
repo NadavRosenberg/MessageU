@@ -52,6 +52,16 @@ std::string users::get_user_id(std::string name)
 	return "";
 }
 
+std::string users::get_username(std::string uuid)
+{
+	for (int i = 0; i < _users.size(); i++)
+		if (uuid.compare(_users[i].uuid) == 0)
+		{
+			return _users[i].name;
+		}
+	return "";
+}
+
 std::string users::get_user_public_key(std::string uuid)
 {
 	for (int i = 0; i < _users.size(); i++)
