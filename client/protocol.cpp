@@ -43,7 +43,7 @@ void protocol::send1103(message msg)
 	}
 
 	// ecrypt the message
-	RSAPublicWrapper pw(private_key);
+	RSAPublicWrapper pw(public_key);
 	std::string plain = msg.getContent();
 	std::string ciper = pw.encrypt(plain);
 	msg.setContent(ciper);

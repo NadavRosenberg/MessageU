@@ -15,8 +15,6 @@ class protocol:
         # create payload
         payload = request.get_payload()
         name, public_key = struct.unpack("255s %ds" % (request.get_payload_size() - 255), payload)
-        #name = payload[:255]
-        #public_key = payload[255:]
         
         # create response
         try:
@@ -50,7 +48,7 @@ class protocol:
         msg_id = self.db.save_message(message)
 
         # create response
-        return Response(2103, bytes(message.get_to_client() + str(msg_id), 'utf-8'))
+        return Response(2103, message.get_to_client() + str(msg_id))
 
     def requestMessages(self, request):
         # create payload
@@ -65,7 +63,7 @@ class protocol:
                 payload += content
 
         # create response
-        return Response(2104, payload.decode())
+        return Response(2104, payload)
 
     def default(self, request):
         print('Something went wrong ..')
