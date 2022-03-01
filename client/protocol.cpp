@@ -126,7 +126,6 @@ void protocol::handle2104()
 	response* res = getResponse();
 
 	// print messages
-	//message* messages = get_messages(req);
 	std::string payload_res = res->get_payload();
 
 	char* pchr = new char[res->get_payload_size() + 1]{ 0 };
@@ -159,7 +158,8 @@ void protocol::handle2104()
 
 			// decrypt the message
 			RSAPrivateWrapper pw(private_key);
-			std::string ciper(pchr, content_size);
+			std::string ciper(&pchr[offset], content_size);
+			offset += content_size;
 			std::string plain = pw.decrypt(ciper);
 
 			printf("%s\n", plain.c_str());
