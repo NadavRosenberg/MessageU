@@ -148,7 +148,7 @@ void protocol::handle2102()
 	response* res = getResponse();
 
 	std::string uuid(res->get_payload().c_str(), UUID_SIZE);
-	std::string pub_key(res->get_payload().c_str()[UUID_SIZE], PUBLIC_KEY_LENGTH);
+	std::string pub_key(&res->get_payload().c_str()[UUID_SIZE], PUBLIC_KEY_LENGTH);
 
 	try 
 	{
