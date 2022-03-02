@@ -76,6 +76,7 @@ void ProtocolWrapper::requestPublicKey()
 
 void ProtocolWrapper::requestMessages() 
 {
+	// send request & handle response
 	ptcl->send1104();
 	ptcl->handle2104();
 }
@@ -116,8 +117,9 @@ void ProtocolWrapper::sendSymmetricKey()
 	std::string user_id = getIdFromName();
 
 	// create symmetric key
-	unsigned char* buffer = new unsigned char[SYMMETRIC_KEY_LENGTH]{ 0 };
+	unsigned char* buffer = new unsigned char[SYMMETRIC_KEY_LENGTH + 1]{ 0 };
 	AESWrapper::GenerateKey(buffer, SYMMETRIC_KEY_LENGTH);
+	buffer[SYMMETRIC_KEY_LENGTH] = '\0';
 	std::string symm_key(reinterpret_cast<char*>(buffer));
 
 	// save symmetric key

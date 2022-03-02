@@ -43,6 +43,11 @@ void protocol::send1103(message msg)
 			// get user's public key
 			std::string pub_key = _users->get_user_public_key(msg.getClientId());
 
+			if (pub_key.length() != PUBLIC_KEY_LENGTH)
+			{
+				throw std::runtime_error("Error: Failed fetching public key! try to fetch the key ..");
+			}
+
 			// ecrypt the message using public key
 			RSAPublicWrapper pw(pub_key);
 			std::string plain = msg.getContent();
@@ -57,6 +62,11 @@ void protocol::send1103(message msg)
 			// get user's symmetric key
 			std::string symm_key = _users->get_user_symm_key(msg.getClientId());
 
+			if (symm_key.length() != SYMMETRIC_KEY_LENGTH)
+			{
+				throw std::runtime_error("Error: Failed fetching symmetric key! try to fetch the key ..");
+			}
+
 			// encrypt the message using symmetric key
 			AESWrapper aes(reinterpret_cast<const unsigned char*>(symm_key.c_str()), SYMMETRIC_KEY_LENGTH);
 			std::string ciper = aes.encrypt(msg.getContent().c_str(), msg.getContentSize());
@@ -68,8 +78,7 @@ void protocol::send1103(message msg)
 	}
 	catch (int num)
 	{
-		printf("Something went wrong! try to fetch the key ..");
-		return;
+		throw std::runtime_error("Error: Something went wrong! try to fetch the key ..");
 	}
 
 	// create request's payload
