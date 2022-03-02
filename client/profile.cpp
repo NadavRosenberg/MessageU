@@ -1,5 +1,6 @@
 #include "profile.h"
 #include "protocol.h"
+#include "Base64Wrapper.h"
 
 void profile::fetchData() {
 	if (std::filesystem::exists(PROFILE_FILENAME)) {
@@ -21,7 +22,8 @@ void profile::fetchData() {
 				memcpy(uuid, segment.c_str(), UUID_SIZE);
 
 				std::getline(content_s, segment, '\n');
-				private_key = segment;
+				std::string pkey = Base64Wrapper::decode(segment);
+				private_key = pkey;
 
 				file.close();
 			}
@@ -37,9 +39,6 @@ void profile::fetchData() {
 	}
 	else {
 		std::ofstream file(PROFILE_FILENAME);
-
-		file << "\n\n" << private_key << std::endl;
-
 		file.close();
 	}
 }

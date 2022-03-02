@@ -24,7 +24,7 @@ response* connection::getResponse()
 void connection::sendRequest(request* req) {
 	req->print();
 	const std::string& message = req->toString();
-	boost::asio::write(sock, boost::asio::buffer(message));
+	boost::asio::write(sock, boost::asio::buffer(message, req->size()));
 }
 
 boost::asio::ip::tcp::socket& connection::connect() {

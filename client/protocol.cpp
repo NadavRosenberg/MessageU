@@ -1,6 +1,7 @@
 #include "protocol.h"
 #include "RSAWrapper.h"
 #include "AESWrapper.h"
+#include "Base64Wrapper.h"
 
 protocol::protocol(connection* c, profile* p, users* u) : conn(c), prof(p), _users(u)
 {
@@ -116,8 +117,11 @@ void protocol::handle2100(std::string name)
 	memcpy(uuid, payload_res.c_str(), UUID_SIZE);
 	uuid[UUID_SIZE] = '\0';
 
+	// convert private to to base64
+	std::string pkey = Base64Wrapper::encode(private_key);
+
 	// save user
-	prof->setData(name, uuid, private_key);
+	prof->setData(name, uuid, pkey);
 }
 
 void protocol::handle2101()

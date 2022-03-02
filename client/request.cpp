@@ -19,7 +19,7 @@ request::~request() {
 }
 
 int request::size() {
-	return sizeof(Request) + r->h.payload_size;
+	return sizeof(RequestHeader) + r->h.payload_size;
 }
 
 std::string request::toString() {
@@ -40,7 +40,7 @@ std::string request::toString() {
 		offset += r->h.payload_size;
 	}
 
-	memcpy(&str[offset], "\n", 1);
+	memcpy(&str[offset], "\0", 1);
 
 	return std::string(str, size());
 }
