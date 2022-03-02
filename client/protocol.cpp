@@ -38,9 +38,12 @@ void protocol::send1102(std::string client_id)
 
 void protocol::send1103(message msg)
 {
+	// get message type
+	char msg_type = msg.getType();
+
 	try
 	{
-		if (msg.getType() == '\2')
+		if (msg_type == '\2')
 		{
 			// get user's public key
 			std::string pub_key = _users->get_user_public_key(msg.getClientId());
@@ -50,16 +53,16 @@ void protocol::send1103(message msg)
 				throw std::runtime_error("Error: Failed fetching public key! try to fetch the key ..");
 			}
 
-			// ecrypt the message using public key
+			// ecrypt the symmetric key using public key
 			RSAPublicWrapper pw(pub_key);
-			std::string plain = msg.getContent();
-			std::string ciper = pw.encrypt(plain);
+			const char* plain = msg.getContent().c_str();
+			std::string ciper = pw.encrypt(plain, SYMMETRIC_KEY_LENGTH);
 
 			// save encrypted content to msg
-			msg.setContentSize(ciper.length());
+			msg.setContentSize(SYMMETRIC_KEY_LENGTH);
 			msg.setContent(ciper);
 		}
-		else if (msg.getType() == '\3')
+		else if (msg_type == '\3')
 		{
 			// get user's symmetric key
 			std::string symm_key = _users->get_user_symm_key(msg.getClientId());
@@ -174,51 +177,43 @@ void protocol::handle2103()
 void protocol::handle2104()
 {
 	response* res = getResponse();
-
-	// print messages
-	std::string payload_res = res->get_payload();
-
-	char* pchr = new char[res->get_payload_size() + 1]{ 0 };
-	memcpy(pchr, payload_res.c_str(), res->get_payload_size());
+	std::string payload = res->get_payload();
+	char* pchr = &payload[0];
 
 	int offset = 0;
 	while (offset < res->get_payload_size()) {
-		// get user's uuid
-		std::string uuid(&pchr[offset], UUID_SIZE);
+		// parse message
+		message msg(&pchr[offset]);
+		offset += msg.size();
 
 		// get user's name
-		std::string username = _users->get_username(uuid);
+		std::string username = _users->get_username(msg.getClientId());
+
+		// get message type
+		char msg_type = msg.getType();
 
 		if (username.length() == 0)
-		{
-			printf("From: %.*s   <request for clients list to reveal>\n", UUID_SIZE, uuid.c_str());
-		}
+			printf("From: %.*s   <request for clients list to reveal>\n", UUID_SIZE, msg.getClientId().c_str());
 		else
-		{
 			printf("From: %s\n", username.c_str());
-		}
-		offset += UUID_SIZE + sizeof(uint32_t);
 		printf("Content:\n");
-
-		char msg_type;
-		memcpy(&msg_type, &pchr[offset], sizeof(char));
-		offset += sizeof(char);
 
 		if (msg_type == '1') {
 			offset += sizeof(uint32_t);
 			printf("Request for symmetric key\n");
 		}
 		else if (msg_type == '2') {
-			offset += sizeof(uint32_t) + sizeof(char) + sizeof(char);
-
 			try
 			{
 				// get symmetric key
-				std::string symm_key(&pchr[offset], SYMMETRIC_KEY_LENGTH);
-				offset += SYMMETRIC_KEY_LENGTH;
+				std::string ciper_symm_key = msg.getContent();
+
+				// decrypt the message
+				RSAPrivateWrapper pw(private_key);
+				std::string plain_symm_key = pw.decrypt(ciper_symm_key);
 
 				// save symmetric key
-				_users->set_user_symm_key(uuid, symm_key);
+				_users->set_user_symm_key(msg.getClientId(), plain_symm_key);
 
 				printf("Symmetric key received\n");
 			}

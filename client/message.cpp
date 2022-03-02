@@ -34,6 +34,34 @@
 //	r->payload = "";
 //}
 
+message::message(char* payload)
+{
+	//char* pchr = new char[payload.length() + 1]{ 0 };
+	//memcpy(pchr, payload.c_str(), payload.length());
+
+	int offset = 0;
+
+	// get user's uuid
+	client_id = std::string(&payload[offset], UUID_SIZE);
+	offset += UUID_SIZE;
+
+	// get message id
+	memcpy(&msg_id, &payload[offset], sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	// get message type
+	msg_type = payload[offset];
+	offset += sizeof(char);
+
+	// get content size
+	memcpy(&content_size, &payload[offset], sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+
+	// get content
+	if (content_size > 0)
+		content = std::string(&payload[offset], content_size);
+}
+
 message::message(std::string ci, char mt, uint32_t cs, std::string c) :
 	client_id(ci), msg_type(mt), content_size(cs), content(c)
 {
@@ -72,6 +100,11 @@ void message::setContent(std::string c)
 void message::setContentSize(uint32_t _content_size)
 {
 	content_size = _content_size;
+}
+
+int message::size()
+{
+	return UUID_SIZE + sizeof(uint32_t) + sizeof(char) + sizeof(uint32_t) + content_size;
 }
 
 
