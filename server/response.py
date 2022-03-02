@@ -17,8 +17,9 @@ class Response:
         print('payload:      ', self.payload, '\n')
 
     def to_bytes(self):
+        payload_b = self.payload
         try:
-            self.payload = bytes(self.payload, 'utf-8')
+            payload_b = bytes(self.payload, 'utf-8')
         except:
             pass
-        return struct.pack("<c H I %ds\n" % self.payload_size, bytes(str(VERSION), "utf-8"), self.code, self.payload_size, self.payload)
+        return struct.pack("<c H I %ds\n" % self.payload_size, bytes(str(VERSION), "utf-8"), self.code, self.payload_size, payload_b)

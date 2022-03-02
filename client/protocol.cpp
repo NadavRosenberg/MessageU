@@ -16,7 +16,8 @@ void protocol::send1100(std::string name)
 	char* payload_req = new char[NAME_LENGTH + PUBLIC_KEY_LENGTH]{ 0 };
 	memcpy(payload_req, name.c_str(), name.length());
 	payload_req[name.length()] = '\0';
-	memcpy(&payload_req[NAME_LENGTH], public_key.c_str(), PUBLIC_KEY_LENGTH);
+	public_key.copy(&payload_req[NAME_LENGTH], PUBLIC_KEY_LENGTH);
+	//memcpy(&payload_req[NAME_LENGTH], public_key.c_str(), PUBLIC_KEY_LENGTH);
 
 	// create & send request
 	request* req = new request(prof->getUuid(), prof->getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
@@ -152,7 +153,7 @@ void protocol::handle2102()
 	response* res = getResponse();
 
 	std::string uuid(res->get_payload().c_str(), UUID_SIZE);
-	std::string pub_key(&res->get_payload().c_str()[UUID_SIZE], PUBLIC_KEY_LENGTH);
+	std::string pub_key(res->get_payload().c_str()[UUID_SIZE], PUBLIC_KEY_LENGTH);
 
 	try 
 	{

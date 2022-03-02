@@ -26,8 +26,6 @@ class protocol:
         except:
             raise Exception('Failed parsing payload!')
 
-        
-
     def requestClientsList(self, request):
         # create payload
         users = self.db.get_users()
@@ -41,11 +39,15 @@ class protocol:
         # create payload
         client_id = request.get_payload().decode('utf-8')
         if len(client_id) != UUID_SIZE:
-            raise Exception() 
-        public_key = self.db.get_user_public_key(client_id).decode('cp437');
+            raise Exception()
+        public_key = self.db.get_user_public_key(client_id);
+
+        payload = b''
+        payload += client_id.encode()
+        payload += public_key
 
         # create response
-        return Response(2102, client_id + public_key)
+        return Response(2102, payload)
 
     def sendMessage(self, request):
         # create payload
