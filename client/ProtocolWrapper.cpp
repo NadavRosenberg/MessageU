@@ -118,10 +118,10 @@ void ProtocolWrapper::sendSymmetricKey()
 
 	// create symmetric key
 	unsigned char* buffer = new unsigned char[SYMMETRIC_KEY_LENGTH + 1]{ 0 };
-	AESWrapper::GenerateKey(buffer, SYMMETRIC_KEY_LENGTH);
+	AESWrapper::GenerateKey(buffer, (unsigned int)SYMMETRIC_KEY_LENGTH);
 	buffer[SYMMETRIC_KEY_LENGTH] = '\0';
-	std::string symm_key(buffer, buffer + SYMMETRIC_KEY_LENGTH);
-
+	std::string symm_key(reinterpret_cast<char*>(buffer));
+	
 	// save symmetric key
 	_users->set_user_symm_key(user_id, symm_key);
 

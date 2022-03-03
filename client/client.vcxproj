@@ -115,6 +115,7 @@
     <ClCompile Include="AESWrapper.cpp" />
     <ClCompile Include="Base64Wrapper.cpp" />
     <ClCompile Include="C:\Users\nadav.rosenberg\Downloads\cryptopp_wrapper\cryptopp_wrapper\cryptopp_wrapper\RSAWrapper.cpp" />
+    <ClCompile Include="test.cpp" />
     <ClCompile Include="users.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="message.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="AESWrapper.h" />
     <ClInclude Include="Base64Wrapper.h" />
     <ClInclude Include="C:\Users\nadav.rosenberg\Downloads\cryptopp_wrapper\cryptopp_wrapper\cryptopp_wrapper\RSAWrapper.h" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="users.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="message.h" />

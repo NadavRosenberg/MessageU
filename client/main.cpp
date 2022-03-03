@@ -4,8 +4,14 @@
 #include "connection.h"
 #include "ProtocolWrapper.h"
 #include "menu.h"
+#include "test.h"
 
 int main() {
+	//sendMessage();
+	//shareSymmetric();
+	//exit_program();
+
+
 	// fetch server's host & port
 	server s = server();
 

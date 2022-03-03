@@ -6,7 +6,7 @@
 
 #pragma pack(push, 1)
 struct RequestHeader {
-	char client_id[UUID_SIZE + 1] = "1111111111111111";
+	char client_id[UUID_SIZE + 1];
 	char version = '\0';
 	uint16_t code;
 	uint32_t payload_size;

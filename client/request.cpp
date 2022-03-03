@@ -26,7 +26,7 @@ std::string request::toString() {
 	char* str = new char[size()]{ 0 };
 
 	int offset = 0;
-	memcpy(str, r->h.client_id, UUID_SIZE);
+	memcpy(&str[offset], &r->h.client_id, UUID_SIZE);
 	offset += UUID_SIZE;
 	memcpy(&str[offset], &r->h.version, sizeof(char));
 	offset += sizeof(char);
