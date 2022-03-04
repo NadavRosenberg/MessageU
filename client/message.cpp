@@ -36,9 +36,6 @@
 
 message::message(char* payload)
 {
-	//char* pchr = new char[payload.length() + 1]{ 0 };
-	//memcpy(pchr, payload.c_str(), payload.length());
-
 	int offset = 0;
 
 	// get user's uuid

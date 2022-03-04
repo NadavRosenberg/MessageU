@@ -196,7 +196,6 @@ void protocol::handle2104()
 		printf("Content:\n");
 
 		if (msg_type == '1') {
-			offset += sizeof(uint32_t);
 			printf("Request for symmetric key\n");
 		}
 		else if (msg_type == '2') {
@@ -220,25 +219,20 @@ void protocol::handle2104()
 			}
 		}
 		else if (msg_type == '3') {
-			// get content size
-			uint32_t content_size;
-			memcpy(&content_size, &pchr[offset], sizeof(uint32_t));
-			offset += sizeof(uint32_t);
-
 			// get user's symmetric key
 			std::string symm_key = _users->get_user_symm_key(msg.getClientId());
 
-			// extract message's content
-			std::string ciper(&pchr[offset], content_size);
-			offset += content_size;
+			if (symm_key.length() != SYMMETRIC_KEY_LENGTH)
+			{
+				throw std::runtime_error("Error: Failed fetching symmetric key! try to fetch the key ..");
+			}
 
 	        // decrypt the message using symmetric key
 			AESWrapper aes(reinterpret_cast<const unsigned char*>(symm_key.c_str()), symm_key.length());
+			std::string ciper = msg.getContent();
 			std::string plain = aes.decrypt(ciper.c_str(), ciper.length());
 
 			printf("%s\n", plain.c_str());
-			printf("%.*s\n", content_size, &pchr[offset]);
-			offset += content_size;
 		}
 		else {
 			printf("Something went wrong!\n");

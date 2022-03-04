@@ -84,8 +84,6 @@ std::string users::get_user_symm_key(std::string uuid)
 
 void users::set_user_symm_key(std::string uuid, std::string symm_key)
 {
-	//std::string padded_name = name + std::string(NAME_LENGTH - std::min(NAME_LENGTH, (int)name.length()), '\0');
-
 	for (int i = 0; i < _users.size(); i++)
 		if (uuid.compare(_users[i].uuid) == 0)
 		{
