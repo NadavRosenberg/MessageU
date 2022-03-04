@@ -34,7 +34,6 @@ class connection:
         if mask & selectors.EVENT_WRITE:
             if data.outb:
                 try:
-                    print('DELETE', data.outb)
                     req = self.protocol.get_request(data.outb)
                     req.print()
                     res = self.protocol.handler(req)
