@@ -8,22 +8,21 @@
 int main() {
 	// fetch server's host & port
 	server s = server();
-
 	std::string host = s.getHost();
 	int port = s.getPort();
 	
 	// connect to server
-	connection* c = new connection(host, std::to_string(port));
+	connection c(host, std::to_string(port));
 
 	// init profile
-	profile* prof = new profile();
-	prof->fetchData();
+	profile prof = profile();
+	prof.fetchData();
 
 	// init users
 	users usr;
 
 	// init protocol
-	protocol prcl(c, prof, &usr);
+	protocol prcl(&c, &prof, &usr);
 
 	// init protocol's wrapper
 	ProtocolWrapper prwr(&prcl, &usr);

@@ -85,7 +85,11 @@ std::string message::toString()
 	offset += sizeof(uint32_t);
 	memcpy(&payload_req[offset], content.c_str(), content_size);
 
-	return std::string(payload_req, payload_size);
+	std::string str = std::string(payload_req, payload_size);
+
+	delete[] payload_req;
+
+	return str;
 }
 
 

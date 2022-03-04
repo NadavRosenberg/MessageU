@@ -23,26 +23,29 @@ int request::size() {
 }
 
 std::string request::toString() {
-	char* str = new char[size()]{ 0 };
+	char* pchr = new char[size()]{ 0 };
 
 	int offset = 0;
-	memcpy(&str[offset], &r->h.client_id, UUID_SIZE);
+	memcpy(&pchr[offset], &r->h.client_id, UUID_SIZE);
 	offset += UUID_SIZE;
-	memcpy(&str[offset], &r->h.version, sizeof(char));
+	memcpy(&pchr[offset], &r->h.version, sizeof(char));
 	offset += sizeof(char);
-	memcpy(&str[offset], &r->h.code, sizeof(uint16_t));
+	memcpy(&pchr[offset], &r->h.code, sizeof(uint16_t));
 	offset += sizeof(uint16_t);
-	memcpy(&str[offset], &r->h.payload_size, sizeof(uint32_t));
+	memcpy(&pchr[offset], &r->h.payload_size, sizeof(uint32_t));
 	offset += sizeof(uint32_t);
 
 	if (r->h.payload_size > 0) {
-		memcpy(&str[offset], r->payload.c_str(), r->h.payload_size);
+		memcpy(&pchr[offset], r->payload.c_str(), r->h.payload_size);
 		offset += r->h.payload_size;
 	}
 
-	memcpy(&str[offset], "\0", 1);
+	memcpy(&pchr[offset], "\0", 1);
+	std::string str = std::string(pchr, size());
 
-	return std::string(str, size());
+	delete[] pchr;
+
+	return str;
 }
 
 void request::print() {

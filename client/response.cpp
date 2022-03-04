@@ -1,6 +1,6 @@
 #include "response.h"
 
-response::response(std::string header_bytes): r(new Response()) {
+response::response(std::string header_bytes): r(new Response) {
 	int offset = 0;
 	const char* dptr = header_bytes.c_str();
 	memcpy(&r->h.version, dptr, sizeof(char));

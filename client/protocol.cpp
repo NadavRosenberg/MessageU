@@ -15,26 +15,26 @@ void protocol::send1100(std::string name)
 	prof->setKeys(pw.getPublicKey(), pw.getPrivateKey());
 
 	// create request's payload
-	char* payload_req = new char[NAME_LENGTH + PUBLIC_KEY_LENGTH]{ 0 };
+	char payload_req[NAME_LENGTH + PUBLIC_KEY_LENGTH]{ 0 };
 	memcpy(payload_req, name.c_str(), name.length());
 	payload_req[name.length()] = '\0';
 	prof->getPublicKey().copy(&payload_req[NAME_LENGTH], PUBLIC_KEY_LENGTH);
 
 	// create & send request
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
-	conn->sendRequest(req);
+	request req(prof->getUuid(), prof->getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
+	conn->sendRequest(&req);
 }
 
 void protocol::send1101()
 {
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1101);
-	conn->sendRequest(req);
+	request req(prof->getUuid(), prof->getVersion(), 1101);
+	conn->sendRequest(&req);
 }
 
 void protocol::send1102(std::string client_id)
 {
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1102, client_id);
-	conn->sendRequest(req);
+	request req(prof->getUuid(), prof->getVersion(), 1102, client_id);
+	conn->sendRequest(&req);
 }
 
 void protocol::send1103(message msg)
@@ -85,14 +85,14 @@ void protocol::send1103(message msg)
 	std::string payload = msg.toString();
 
 	// create & send request
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, payload);
-	conn->sendRequest(req);
+	request req(prof->getUuid(), prof->getVersion(), 1103, payload);
+	conn->sendRequest(&req);
 }
 
 void protocol::send1104()
 {
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1104);
-	conn->sendRequest(req);
+	request req(prof->getUuid(), prof->getVersion(), 1104);
+	conn->sendRequest(&req);
 }
 
 void protocol::handle2100(std::string name)
@@ -101,7 +101,7 @@ void protocol::handle2100(std::string name)
 
 	// analyze response's payload
 	std::string payload_res = res->get_payload();
-	char* uuid = new char[UUID_SIZE + 1];
+	char uuid[UUID_SIZE + 1];
 	memcpy(uuid, payload_res.c_str(), UUID_SIZE);
 	uuid[UUID_SIZE] = '\0';
 
@@ -127,6 +127,8 @@ void protocol::handle2101()
 		_users->add_user(uuid, name);
 		offset += UUID_SIZE + NAME_LENGTH;
 	}
+
+	//delete[] pchr;
 
 	// print users
 	_users->print();

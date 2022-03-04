@@ -8,7 +8,7 @@
 int sendMessage()
 {
 	// create symmetric key
-	unsigned char* buffer = new unsigned char[SYMMETRIC_KEY_LENGTH + 1]{ 0 };
+	unsigned char buffer[SYMMETRIC_KEY_LENGTH + 1]{ 0 };
 	AESWrapper::GenerateKey(buffer, (unsigned int)SYMMETRIC_KEY_LENGTH);
 	buffer[SYMMETRIC_KEY_LENGTH] = '\0';
 	std::string symm_key(buffer, buffer + SYMMETRIC_KEY_LENGTH);
@@ -45,7 +45,7 @@ int shareSymmetric()
 	std::string private_key2 = pw2.getPrivateKey();
 
 	// create symmetric key
-	unsigned char* buffer = new unsigned char[SYMMETRIC_KEY_LENGTH + 1]{ 0 };
+	unsigned char buffer[SYMMETRIC_KEY_LENGTH + 1]{ 0 };
 	AESWrapper::GenerateKey(buffer, (unsigned int)SYMMETRIC_KEY_LENGTH);
 	buffer[SYMMETRIC_KEY_LENGTH] = '\0';
 	std::string symm_key(reinterpret_cast<char*>(buffer));
