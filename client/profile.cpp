@@ -19,9 +19,10 @@ void profile::fetchData() {
 				name = segment;
 
 				std::getline(content_s, segment, '\n');
-				memcpy(uuid, segment.c_str(), UUID_SIZE);
+				if (!segment.empty())
+					memcpy(uuid, segment.c_str(), UUID_SIZE);
 
-				std::getline(content_s, segment, '\n');
+				std::getline(content_s, segment, '\xff');
 				std::string pkey = Base64Wrapper::decode(segment);
 				private_key = pkey;
 

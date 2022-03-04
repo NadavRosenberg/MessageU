@@ -14,17 +14,18 @@ class protocol:
     def registerUser(self, request):
         # create payload
         payload = request.get_payload()
+        name, public_key = ('', '')
         try:
             name, public_key = struct.unpack("255s 160s", payload)
-
-            # create response
-            try:
-                uuid = self.db.create_user(name, public_key)
-                return Response(2100, uuid)
-            except:
-                raise Exception('Username already exists!')
         except:
             raise Exception('Failed parsing payload!')
+
+        # create response
+        try:
+            uuid = self.db.create_user(name, public_key)
+            return Response(2100, uuid)
+        except:
+            raise Exception('Username already exists!')
 
     def requestClientsList(self, request):
         # create payload
