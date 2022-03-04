@@ -1,4 +1,5 @@
 #include "connection.h"
+#include "global.h"
 
 connection::connection(std::string h, std::string p): host(h), port(p), s(io_context), sock(connect()) {
 }
@@ -16,13 +17,16 @@ response* connection::getResponse()
 	read_buffer.consume(bytes_transferred);
 	res->set_payload(payload_bytes);
 
-	res->print();
+	if (DEBUG_MODE)
+		res->print();
 
 	return res;
 }
 
 void connection::sendRequest(request* req) {
-	req->print();
+	if (DEBUG_MODE)
+		req->print();
+
 	const std::string& message = req->toString();
 	boost::asio::write(sock, boost::asio::buffer(message, req->size()));
 }
