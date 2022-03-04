@@ -10,6 +10,10 @@ private:
 	connection* conn;
 	profile* prof;
 	users* _users;
+	response* getResponse();
+	void handleMsgType1(message);
+	void handleMsgType2(message);
+	void handleMsgType3(message);
 public:
 	protocol(connection*, profile*, users*);
 	void send1100(std::string);
@@ -22,5 +26,4 @@ public:
 	void handle2102();
 	void handle2103();
 	void handle2104();
-	response* getResponse();
 };

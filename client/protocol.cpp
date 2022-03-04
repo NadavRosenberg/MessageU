@@ -2,6 +2,8 @@
 #include "RSAWrapper.h"
 #include "AESWrapper.h"
 
+#define PUBLIC_KEY_LENGTH 160
+
 protocol::protocol(connection* c, profile* p, users* u) : conn(c), prof(p), _users(u)
 {
 }
@@ -17,7 +19,6 @@ void protocol::send1100(std::string name)
 	memcpy(payload_req, name.c_str(), name.length());
 	payload_req[name.length()] = '\0';
 	prof->getPublicKey().copy(&payload_req[NAME_LENGTH], PUBLIC_KEY_LENGTH);
-	//memcpy(&payload_req[NAME_LENGTH], public_key.c_str(), PUBLIC_KEY_LENGTH);
 
 	// create & send request
 	request* req = new request(prof->getUuid(), prof->getVersion(), 1100, std::string(payload_req, NAME_LENGTH + PUBLIC_KEY_LENGTH));
@@ -47,11 +48,8 @@ void protocol::send1103(message msg)
 		{
 			// get user's public key
 			std::string pub_key = _users->get_user_public_key(msg.getClientId());
-
 			if (pub_key.length() != PUBLIC_KEY_LENGTH)
-			{
 				throw std::runtime_error("Error: Failed fetching public key! try to fetch the key ..");
-			}
 
 			// encrypt symmetric key using target's public key
 			RSAPublicWrapper pw(pub_key);
@@ -66,11 +64,8 @@ void protocol::send1103(message msg)
 		{
 			// get user's symmetric key
 			std::string symm_key = _users->get_user_symm_key(msg.getClientId());
-
 			if (symm_key.length() != SYMMETRIC_KEY_LENGTH)
-			{
 				throw std::runtime_error("Error: Failed fetching symmetric key! try to fetch the key ..");
-			}
 
 			// encrypt the message using symmetric key
 			AESWrapper aes(reinterpret_cast<const unsigned char*>(symm_key.c_str()), symm_key.length());
@@ -87,21 +82,10 @@ void protocol::send1103(message msg)
 	}
 
 	// create request's payload
-	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + msg.getContentSize();
-	char* payload_req = new char[payload_size + 1] { 0 };
-
-	int offset = 0;
-	memcpy(payload_req, msg.getClientId().c_str(), UUID_SIZE);
-	offset += UUID_SIZE;
-	payload_req[offset] = msg.getType();
-	offset += sizeof(char);
-	uint32_t content_size = msg.getContentSize();
-	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
-	offset += sizeof(uint32_t);
-	memcpy(&payload_req[offset], msg.getContent().c_str(), msg.getContentSize());
+	std::string payload = msg.toString();
 
 	// create & send request
-	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, std::string(payload_req, payload_size));
+	request* req = new request(prof->getUuid(), prof->getVersion(), 1103, payload);
 	conn->sendRequest(req);
 }
 
@@ -196,43 +180,13 @@ void protocol::handle2104()
 		printf("Content:\n");
 
 		if (msg_type == '1') {
-			printf("Request for symmetric key\n");
+			handleMsgType1(msg);
 		}
 		else if (msg_type == '2') {
-			try
-			{
-				// get symmetric key
-				std::string ciper = msg.getContent();
-
-				// decrypt the message using private key
-				RSAPrivateWrapper pw(prof->getPrivateKey());
-				std::string plain_recovered = pw.decrypt(ciper);
-
-				// save symmetric key
-				_users->set_user_symm_key(msg.getClientId(), plain_recovered);
-
-				printf("Symmetric key received\n");
-			}
-			catch (int num)
-			{
-				printf("Failed to fetch Symmetric key!\n");
-			}
+			handleMsgType2(msg);
 		}
 		else if (msg_type == '3') {
-			// get user's symmetric key
-			std::string symm_key = _users->get_user_symm_key(msg.getClientId());
-
-			if (symm_key.length() != SYMMETRIC_KEY_LENGTH)
-			{
-				throw std::runtime_error("Error: Failed fetching symmetric key! try to fetch the key ..");
-			}
-
-	        // decrypt the message using symmetric key
-			AESWrapper aes(reinterpret_cast<const unsigned char*>(symm_key.c_str()), symm_key.length());
-			std::string ciper = msg.getContent();
-			std::string plain = aes.decrypt(ciper.c_str(), ciper.length());
-
-			printf("%s\n", plain.c_str());
+			handleMsgType3(msg);
 		}
 		else {
 			printf("Something went wrong!\n");
@@ -240,6 +194,49 @@ void protocol::handle2104()
 		}
 		printf("-----<EOM>-----\n");
 	}
+}
+
+void protocol::handleMsgType1(message msg)
+{
+	printf("Request for symmetric key\n");
+}
+
+void protocol::handleMsgType2(message msg)
+{
+	try
+	{
+		// get symmetric key
+		std::string ciper = msg.getContent();
+
+		// decrypt the message using private key
+		RSAPrivateWrapper pw(prof->getPrivateKey());
+		std::string plain_recovered = pw.decrypt(ciper);
+
+		// save symmetric key
+		_users->set_user_symm_key(msg.getClientId(), plain_recovered);
+
+		printf("Symmetric key received\n");
+	}
+	catch (int num)
+	{
+		printf("Error: Failed fetching symmetric key! try to fetch the key ..\n");
+	}
+}
+
+void protocol::handleMsgType3(message msg)
+{
+	// get user's symmetric key
+	std::string symm_key = _users->get_user_symm_key(msg.getClientId());
+	if (symm_key.length() != SYMMETRIC_KEY_LENGTH)
+		printf("Error: Failed fetching symmetric key! try to fetch the key ..\n");
+
+	// decrypt the message using symmetric key
+	AESWrapper aes(reinterpret_cast<const unsigned char*>(symm_key.c_str()), symm_key.length());
+	std::string ciper = msg.getContent();
+	std::string plain = aes.decrypt(ciper.c_str(), ciper.length());
+
+	// print the message
+	printf("%s\n", plain.c_str());
 }
 
 response* protocol::getResponse()

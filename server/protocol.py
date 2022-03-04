@@ -108,7 +108,5 @@ class protocol:
         content_size = len(data_bytes) - struct.calcsize('16s c 4s');
         to_client, msg_type, content_size, content = struct.unpack("16s c 4s %ds" % content_size, data_bytes)
         if int.from_bytes(content_size, 'little') > 0:
-            #content = struct.unpack("%ds" % int.from_bytes(content_size, 'little'), data_bytes)
             return Message(to_client, request.get_client_id(), msg_type, content)
-        #to_client, msg_type, content_size, content = struct.unpack("16s c 4s %ds" % content_size, data_bytes)
         return Message(to_client, request.get_client_id(), msg_type, '')

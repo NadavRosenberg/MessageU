@@ -1,25 +1,6 @@
 #include "users.h"
 #include "global.h"
 
-void users::add_user(std::string uuid, std::string name, std::string public_key, std::string symmetric_key)
-{
-	user u;
-	u.uuid = uuid;
-	u.name = name;
-	u.symmetric_key = symmetric_key;
-	u.public_key = public_key;
-	_users.push_back(u);
-}
-
-void users::add_user(std::string uuid, std::string name, std::string public_key)
-{
-	user u;
-	u.uuid = uuid;
-	u.name = name;
-	u.public_key = public_key;
-	_users.push_back(u);
-}
-
 void users::add_user(std::string uuid, std::string name)
 {
 	if (!is_exist(uuid)) // is not exist
@@ -29,14 +10,6 @@ void users::add_user(std::string uuid, std::string name)
 		u.name = name;
 		u.public_key = "";
 		_users.push_back(u);
-	}
-}
-
-void users::add_users(user clients[], int amount)
-{
-	for (int i = 0; i < amount; i++)
-	{
-		_users.push_back(clients[i]);
 	}
 }
 

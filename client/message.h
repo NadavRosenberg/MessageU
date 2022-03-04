@@ -19,5 +19,6 @@ public:
 	void setContent(std::string);
 	void setContentSize(uint32_t);
 	int size();
+	std::string toString();
 };
 

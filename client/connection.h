@@ -20,4 +20,3 @@ public:
 	response* getResponse();
 	void sendRequest(request*);
 };
-

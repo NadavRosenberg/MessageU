@@ -9,22 +9,22 @@ void profile::fetchData() {
 
 		if (file.is_open()) {
 			std::stringstream content_s;
-			//file >> content; // pipe file's content into stream
 			content_s << file.rdbuf();
 
 			try {
 				std::string segment;
 
 				std::getline(content_s, segment, '\n');
-				name = segment;
+				if (!segment.empty())
+					name = segment;
 
 				std::getline(content_s, segment, '\n');
 				if (!segment.empty())
 					memcpy(uuid, segment.c_str(), UUID_SIZE);
 
-				std::getline(content_s, segment, '\xff');
-				std::string pkey = Base64Wrapper::decode(segment);
-				private_key = pkey;
+				std::getline(content_s, segment, '\xff'); // until EOF
+				if (!segment.empty())
+					private_key = Base64Wrapper::decode(segment);
 
 				file.close();
 			}

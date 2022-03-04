@@ -1,39 +1,6 @@
 #include "message.h"
 #include "global.h"
 
-//message::message(char* uuid, char version, std::string target, char msgType, std::string msgContent) {
-//	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + msgContent.length();
-//	char* payload = new char[payload_size]{ 0 };
-//
-//	int offset = 0;
-//	memcpy(payload, target.c_str(), UUID_SIZE);
-//	offset += UUID_SIZE;
-//	payload[offset] = msgType;
-//	offset += sizeof(char);
-//	int content_size = msgContent.length();
-//	memcpy(&payload[offset], &content_size, sizeof(uint32_t));
-//	offset += sizeof(uint32_t);
-//	memcpy(&payload[offset], msgContent.c_str(), content_size);
-//
-//	memcpy(r->h.client_id, uuid, UUID_SIZE);
-//	r->h.version = version;
-//	r->h.code = 1103;
-//	r->h.payload_size = payload_size;
-//	r->payload = payload;
-//}
-//
-//message::message(char* uuid, char version, std::string target, char msgType): message::message(uuid, version, target, msgType, "") {
-//}
-//
-//message::message(std::string target, std::string msgType) {
-//
-//	//r->h.client_id = target;
-//	//r->h.version = prof.getVersion();
-//	r->h.code = 1103;
-//	r->h.payload_size = 0;
-//	r->payload = "";
-//}
-
 message::message(char* payload)
 {
 	int offset = 0;
@@ -102,6 +69,23 @@ void message::setContentSize(uint32_t _content_size)
 int message::size()
 {
 	return UUID_SIZE + sizeof(uint32_t) + sizeof(char) + sizeof(uint32_t) + content_size;
+}
+
+std::string message::toString()
+{
+	int payload_size = UUID_SIZE + sizeof(char) + sizeof(uint32_t) + content_size;
+	char* payload_req = new char[payload_size + 1]{ 0 };
+
+	int offset = 0;
+	memcpy(payload_req, client_id.c_str(), UUID_SIZE);
+	offset += UUID_SIZE;
+	payload_req[offset] = msg_type;
+	offset += sizeof(char);
+	memcpy(&payload_req[offset], &content_size, sizeof(uint32_t));
+	offset += sizeof(uint32_t);
+	memcpy(&payload_req[offset], content.c_str(), content_size);
+
+	return std::string(payload_req, payload_size);
 }
 
 
