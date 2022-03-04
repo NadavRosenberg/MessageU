@@ -1,22 +1,22 @@
 #include "protocol.h"
 #include "RSAWrapper.h"
 #include "AESWrapper.h"
-#include "Base64Wrapper.h"
 
 protocol::protocol(connection* c, profile* p, users* u) : conn(c), prof(p), _users(u)
 {
-	RSAPrivateWrapper pw;
-	public_key = pw.getPublicKey();
-	private_key = pw.getPrivateKey();
 }
 
 void protocol::send1100(std::string name)
 {
+	// create asymmetric keys
+	RSAPrivateWrapper pw;
+	prof->setKeys(pw.getPublicKey(), pw.getPrivateKey());
+
 	// create request's payload
 	char* payload_req = new char[NAME_LENGTH + PUBLIC_KEY_LENGTH]{ 0 };
 	memcpy(payload_req, name.c_str(), name.length());
 	payload_req[name.length()] = '\0';
-	public_key.copy(&payload_req[NAME_LENGTH], PUBLIC_KEY_LENGTH);
+	prof->getPublicKey().copy(&payload_req[NAME_LENGTH], PUBLIC_KEY_LENGTH);
 	//memcpy(&payload_req[NAME_LENGTH], public_key.c_str(), PUBLIC_KEY_LENGTH);
 
 	// create & send request
@@ -121,11 +121,8 @@ void protocol::handle2100(std::string name)
 	memcpy(uuid, payload_res.c_str(), UUID_SIZE);
 	uuid[UUID_SIZE] = '\0';
 
-	// convert private to to base64
-	std::string pkey = Base64Wrapper::encode(private_key);
-
 	// save user
-	prof->setData(name, uuid, pkey);
+	prof->setData(name, uuid, prof->getPrivateKey());
 }
 
 void protocol::handle2101()
@@ -209,7 +206,7 @@ void protocol::handle2104()
 				std::string ciper = msg.getContent();
 
 				// decrypt the message using private key
-				RSAPrivateWrapper pw(private_key);
+				RSAPrivateWrapper pw(prof->getPrivateKey());
 				std::string plain_recovered = pw.decrypt(ciper);
 
 				// save symmetric key

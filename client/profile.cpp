@@ -49,24 +49,7 @@ void profile::setData(std::string _name, char* _uuid, std::string _private_key) 
 	memcpy(uuid, _uuid, UUID_SIZE + 1);
 	private_key = _private_key;
 
-	std::ofstream file(PROFILE_FILENAME);
-	std::string content;
-
-	if (file.is_open()) {
-		file << name << '\n';
-		file << uuid << '\n';
-		file << private_key;
-
-		file.close();
-	}
-	else {
-		std::cerr << "Something happend while opening the file!" << std::endl;
-		exit_program();
-	}
-}
-
-bool profile::isExist() {
-	return std::filesystem::exists(PROFILE_FILENAME);
+	saveToFile();
 }
 
 std::string profile::getName() {
@@ -77,10 +60,47 @@ char* profile::getUuid() {
 	return uuid;
 }
 
-std::string profile::getPrivateKey() {
+int profile::getVersion() {
+	return VERSION;
+}
+
+void profile::setKeys(std::string _public_key, std::string _private_key)
+{
+	public_key = _public_key;
+	private_key = _private_key;
+	saveToFile();
+}
+
+std::string profile::getPublicKey()
+{
+	return public_key;
+}
+
+std::string profile::getPrivateKey()
+{
 	return private_key;
 }
 
-int profile::getVersion() {
-	return VERSION;
+void profile::saveToFile()
+{
+	std::ofstream file(PROFILE_FILENAME);
+	std::string content;
+
+	if (file.is_open()) {
+		std::string pkey = Base64Wrapper::encode(private_key);
+
+		file << name << '\n';
+		file << uuid << '\n';
+		file << pkey;
+
+		file.close();
+	}
+	else {
+		std::cerr << "Something happend while opening the file!" << std::endl;
+		exit_program();
+	}
+}
+
+bool profile::isUserRegistered() {
+	return name.length() > 0;
 }

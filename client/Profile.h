@@ -17,13 +17,17 @@ private:
 	std::string name;
 	char uuid[UUID_SIZE + 1];
 	std::string private_key;
+	std::string public_key;
+	void saveToFile();
 public:
 	void fetchData();
 	void setData(std::string, char*, std::string);
-	bool isExist();
+	void setKeys(std::string, std::string);
 	std::string getName();
 	char* getUuid();
+	std::string getPublicKey();
 	std::string getPrivateKey();
 	static int getVersion();
+	bool isUserRegistered();
 };
 

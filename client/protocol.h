@@ -10,8 +10,6 @@ private:
 	connection* conn;
 	profile* prof;
 	users* _users;
-	std::string private_key;
-	std::string public_key;
 public:
 	protocol(connection*, profile*, users*);
 	void send1100(std::string);
