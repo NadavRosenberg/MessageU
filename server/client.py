@@ -4,8 +4,3 @@ class Client(object):
         self.user_name = user_name
         self.public_key = public_key
         self.last_seen = last_seen
-    pass
-
-
-
-

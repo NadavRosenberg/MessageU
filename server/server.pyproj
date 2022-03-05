@@ -5,7 +5,7 @@
     <ProjectGuid>bf2a3610-83b2-447b-82a3-bb4d207a1fbd</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>server.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,11 +22,15 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="tmp.py" />
+    <Compile Include="db.py" />
+    <Compile Include="protocol.py" />
+    <Compile Include="port.py" />
+    <Compile Include="request.py" />
+    <Compile Include="response.py" />
     <Compile Include="connection.py" />
     <Compile Include="message.py" />
     <Compile Include="client.py" />
-    <Compile Include="server.py" />
+    <Compile Include="main.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="myport.info" />
