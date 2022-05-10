@@ -7,6 +7,7 @@ The client is written in C++ and using Boost for network, and Crypto++ for end-t
 
 <br>
 Resources:
+
 * https://realpython.com/python-sockets/#multi-connection-server
 * https://www.tutorialspoint.com/sqlite/sqlite_python.htm
 * https://www.geeksforgeeks.org/socket-programming-cc/
